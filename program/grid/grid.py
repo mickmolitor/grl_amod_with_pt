@@ -164,7 +164,7 @@ class Grid:
 
         return final_cell
 
-    def find_n_adjacent_cells(self, cell: GridCell, n: int) -> set(GridCell):
+    def find_n_adjacent_cells(self, cell: GridCell, n: int) -> set[GridCell]:
         cell_set = set()
         (i, j) = self.cells_to_indices[cell]
         min_i = i - n if i - n > 0 else 0
