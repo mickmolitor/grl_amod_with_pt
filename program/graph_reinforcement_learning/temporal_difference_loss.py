@@ -4,6 +4,7 @@ import torch.nn as nn
 
 from params.program_params import ProgramParams
 
+
 class TemporalDifferenceLoss(nn.Module):
     def __init__(self):
         super(TemporalDifferenceLoss, self).__init__()
@@ -18,9 +19,9 @@ class TemporalDifferenceLoss(nn.Module):
             duration = end_t - start_t if end_t > start_t else 86400 - start_t + end_t
             reward = x[0]["reward"]
             loss += (
-                reward
+                start_state_value
+                - reward
                 + ProgramParams.DISCOUNT_FACTOR(duration) * end_state_value
-                - start_state_value
             ) ** 2
-        
+
         return loss

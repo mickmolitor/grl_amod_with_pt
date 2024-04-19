@@ -1,6 +1,6 @@
 from __future__ import annotations
 from program.interval.time import Time
-from program.location.zone import Zone
+from program.zone.zone import Zone
 from params.program_params import ProgramParams
 from program.utils import IdProvider
 from program.location.location import Location

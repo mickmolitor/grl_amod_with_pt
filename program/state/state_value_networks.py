@@ -1,16 +1,26 @@
 from __future__ import annotations
 import math
 import os
-from program.action.vehicle_action_pair import DriverActionPair
 import torch
+from torch import Tensor
 import torch.optim as optim
-from deep_reinforcement_learning.neuro_net import NeuroNet
-from deep_reinforcement_learning.temporal_difference_loss import TemporalDifferenceLoss
-from interval.time import Time
-from location.location import Location
-from location.zone import Zone
-from logger import LOGGER
-from program.program_params import ProgramParams
+
+from program.action.action import Action
+from program.graph_reinforcement_learning.deep_neural_network import DeepNeuralNetwork
+from program.graph_reinforcement_learning.graph_sage import GraphSAGE
+from program.graph_reinforcement_learning.main_network import MainNetwork
+from program.graph_reinforcement_learning.target_network import TargetNetwork
+from program.graph_reinforcement_learning.temporal_difference_loss import (
+    TemporalDifferenceLoss,
+)
+from program.interval.time import Time
+from program.state.state import State
+from program.zone.zone import Zone
+from program.logger import LOGGER
+
+from params.program_params import ProgramParams
+from program.zone.zone_graph import ZoneGraph
+from program.zone.zones import Zones
 
 
 class StateValueNetworks:
@@ -21,42 +31,47 @@ class StateValueNetworks:
             StateValueNetworks._state_value_networks = StateValueNetworks()
         return StateValueNetworks._state_value_networks
 
-    def main_network() -> NeuroNet:
-        return StateValueNetworks.get_instance().main_net
-
-    def target_network() -> NeuroNet:
-        return StateValueNetworks.get_instance().target_net
-
     def __init__(self) -> None:
-        self.main_net = NeuroNet()
-        self.target_net = NeuroNet()
-        self.main_net.train()
-
+        self.main_net = MainNetwork()
+        self.target_net = TargetNetwork()
         self.loss_fn = TemporalDifferenceLoss()
-        # Optimizer
-        self.optimizer = optim.Adam(
-            self.main_net.parameters(), lr=3 * math.exp(-4)
-        )  # Stochastic Gradient Descent
 
         self.iteration = 1
 
-    def get_main_state_value(self, zone: Zone, time: Time) -> float:
-        return float(
-            self.main_net(
-                torch.Tensor([zone.id])
-            ).item()
-        )
+    # Travel time in seconds
+    def get_main_state_value(
+        self, action: Action, origin_zone: Zone, destination_zone: Zone
+    ) -> float:
+        return self.main_net.get_state_value(action, origin_zone, destination_zone)
 
-    def get_target_state_value(self, zone: Zone, time: Time) -> float:
-        return float(
-            self.target_net(
-                torch.Tensor([zone.id])
-            ).item()
-        )
+    def get_target_state_value(
+        self, action: Action, origin_zone: Zone, destination_zone: Zone
+    ) -> float:
+        return self.target_net.get_state_value(action, origin_zone, destination_zone)
+
+    def initialize_iteration(self) -> None:
+        self.main_net.optimizer_zero_grad()
+        state = State.get_state()
+        zone_graph = ZoneGraph.get_instance()
+        zone_to_features = {}
+        # Update zone graph
+        for zone in Zones.get_zones():
+            current_orders = state.get_current_order_quota(zone)
+            last_orders = state.get_last_order_quota(zone)
+            idle, occupied = state.amount_of_vehicles_per_zone[zone]
+            # TODO implement average reduction
+            average_reduction = 0
+            zone_to_features[zone] = ZoneGraph.Feature(
+                current_orders, last_orders, occupied, idle, average_reduction
+            )
+        zone_graph.update_features(zone_to_features)
+        self.main_net.calculate_graph_embedding(zone_graph.get_edge_index(),zone_graph.get_feature_index())
+        self.target_net.calculate_graph_embedding(zone_graph.get_edge_index(),zone_graph.get_feature_index())
 
     # We want a list of action tuples here since the error function is calculated in each iteration for all changes
     def adjust_state_values(self, action_tuples: list[tuple]) -> None:
         from state.state import State
+
         trajectories = []
         for tup in action_tuples:
             trajectories.append(
@@ -69,7 +84,11 @@ class StateValueNetworks:
                 }
             )
         LOGGER.debug("Adjust weights for deep state value networks")
-        if State.get_state().current_time.to_total_minutes() % ProgramParams.MAIN_AND_TARGET_NET_SYNC_ITERATIONS == 0:
+        if (
+            State.get_state().current_time.to_total_minutes()
+            % ProgramParams.MAIN_AND_TARGET_NET_SYNC_ITERATIONS
+            == 0
+        ):
             LOGGER.debug("Transfer weights from main to target network")
             self.target_net.load_state_dict(self.main_net.state_dict())
 
@@ -121,7 +140,7 @@ class StateValueNetworks:
         torch.save(
             self.target_net.state_dict(), "code/training_data/target_net_state_dict.pth"
         )
-    
+
     def export_offline_policy_weights(self, previous_total_minutes: int) -> None:
         daystr = ""
         wd = ProgramParams.SIMULATION_DATE.weekday()
@@ -133,11 +152,14 @@ class StateValueNetworks:
             daystr = "sun"
         # Export current trained values first
         torch.save(
-        self.main_net.state_dict(), f"code/training_data/ope_{daystr}_{previous_total_minutes}.pth"
+            self.main_net.state_dict(),
+            f"code/training_data/ope_{daystr}_{previous_total_minutes}.pth",
         )
         torch.save(
-            self.target_net.state_dict(), f"code/training_data/ope_target_{daystr}_{previous_total_minutes}.pth"
+            self.target_net.state_dict(),
+            f"code/training_data/ope_target_{daystr}_{previous_total_minutes}.pth",
         )
+
     # Used for training only
     def import_offline_policy_weights(self, current_total_minutes: int) -> None:
         daystr = ""
@@ -150,16 +172,26 @@ class StateValueNetworks:
             daystr = "sun"
 
         if current_total_minutes > 0:
-            previous_total_minutes_ind = ProgramParams.TIME_SERIES_BREAKPOINTS().index(current_total_minutes) - 1
-            previous_total_minutes = ProgramParams.TIME_SERIES_BREAKPOINTS()[previous_total_minutes_ind]
+            previous_total_minutes_ind = (
+                ProgramParams.TIME_SERIES_BREAKPOINTS().index(current_total_minutes) - 1
+            )
+            previous_total_minutes = ProgramParams.TIME_SERIES_BREAKPOINTS()[
+                previous_total_minutes_ind
+            ]
             self.export_offline_policy_weights(previous_total_minutes)
 
         # Load state dict if exists
-        if os.path.exists(f"code/training_data/ope_{daystr}_{current_total_minutes}.pth"):
+        if os.path.exists(
+            f"code/training_data/ope_{daystr}_{current_total_minutes}.pth"
+        ):
             self.main_net.load_state_dict(
-                torch.load(f"code/training_data/ope_{daystr}_{current_total_minutes}.pth")
+                torch.load(
+                    f"code/training_data/ope_{daystr}_{current_total_minutes}.pth"
+                )
             )
-        if os.path.exists(f"code/training_data/ope_target_{daystr}_{current_total_minutes}.pth"):
+        if os.path.exists(
+            f"code/training_data/ope_target_{daystr}_{current_total_minutes}.pth"
+        ):
             self.target_net.load_state_dict(
                 torch.load(
                     f"code/training_data/ope_target_{daystr}_{current_total_minutes}.pth"
@@ -168,9 +200,7 @@ class StateValueNetworks:
         else:
             self.target_net.load_state_dict(self.main_net.state_dict())
 
-        self.optimizer = optim.Adam(
-            self.main_net.parameters(), lr=3 * math.exp(-4)
-        )
+        self.optimizer = optim.Adam(self.main_net.parameters(), lr=3 * math.exp(-4))
         self.main_net.train()
 
     def load_offline_policy_weights(self, current_total_minutes: int) -> None:
@@ -187,11 +217,17 @@ class StateValueNetworks:
         ope_target_net = NeuroNet()
 
         # Load state dict if exists
-        if os.path.exists(f"code/training_data/ope_{daystr}_{current_total_minutes}.pth"):
+        if os.path.exists(
+            f"code/training_data/ope_{daystr}_{current_total_minutes}.pth"
+        ):
             ope_net.load_state_dict(
-                torch.load(f"code/training_data/ope_{daystr}_{current_total_minutes}.pth")
+                torch.load(
+                    f"code/training_data/ope_{daystr}_{current_total_minutes}.pth"
+                )
             )
-        if os.path.exists(f"code/training_data/ope_target_{daystr}_{current_total_minutes}.pth"):
+        if os.path.exists(
+            f"code/training_data/ope_target_{daystr}_{current_total_minutes}.pth"
+        ):
             ope_target_net.load_state_dict(
                 torch.load(
                     f"code/training_data/ope_target_{daystr}_{current_total_minutes}.pth"
@@ -221,7 +257,5 @@ class StateValueNetworks:
 
         self.main_net.load_state_dict(new_main_state)
         self.target_net.load_state_dict(new_target_state)
-        self.optimizer = optim.Adam(
-            self.main_net.parameters(), lr=3 * math.exp(-4)
-        )
+        self.optimizer = optim.Adam(self.main_net.parameters(), lr=3 * math.exp(-4))
         self.main_net.train()

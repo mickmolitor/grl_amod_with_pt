@@ -1,4 +1,5 @@
 from __future__ import annotations
+import math
 
 class Time:
     
@@ -40,8 +41,11 @@ class Time:
     
     def to_total_seconds(self) -> int:
         return self.total_seconds
+    
+    def to_normalized_time(self) -> float:
+        return math.cos((self.total_seconds / 86400) * 2 * math.pi)
 
-        # in case need to print time
+    # in case need to print time
     def __str__(self) -> str:
         hours, minutes, seconds = self.to_hours_minutes_seconds()
         return f"{hours:02d}:{minutes:02d}:{seconds:02d}"

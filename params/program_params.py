@@ -24,7 +24,7 @@ class ProgramParams:
 
     AMOUNT_OF_DRIVERS = 100
 
-    LEARNING_RATE = 0.01  # im Paper Feng et al. 2022 ist es 0.005
+    LEARNING_RATE = 0.025  # See Tang et al. (2021)
 
     MAXIMUM_STATE_VALUE = 1000
 
@@ -59,8 +59,8 @@ class ProgramParams:
     ######################################################################################################
     ############### Variable, aber wollen wir kaum verändern ###############
 
-    # Time the driver need to idle until he can relocate
-    MAX_IDLING_TIME = 150
+    # Time the vehicle needs to idle until it can relocate
+    MAX_IDLING_TIME = 300
 
     EXECUTION_MODE = None
 
@@ -71,12 +71,12 @@ class ProgramParams:
     L2 = 1800
 
     def DISCOUNT_FACTOR(duration_in_seconds: int) -> float:
-        DISCOUNT_RATE = 0.95  # im Paper Feng et al. 2022 ist es 0.95
+        DISCOUNT_RATE = 0.9  # See Tang et al. (2021)
         LS = 60
         return DISCOUNT_RATE ** (duration_in_seconds / LS)
     
     def DISCOUNT_FACTOR_RELOCATION(duration_in_seconds: int) -> float:
-        DISCOUNT_RATE = 0.95 
+        DISCOUNT_RATE = 0.9  # See Tang et al. (2021)
         LS = 60
         return DISCOUNT_RATE ** (duration_in_seconds / LS)
     

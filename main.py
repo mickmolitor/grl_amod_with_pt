@@ -9,3 +9,11 @@ from visualization.visualize_graph import visualize_zone_graph
 #fix_zone_graph()
 
 test_graph_sage()
+
+# Orders einlesen
+# State aktualisieren
+# Grid Embedding
+# Routen und Pairs berechnen
+# State updaten
+# relocations
+# state value updaten

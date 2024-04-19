@@ -43,3 +43,4 @@ def test_graph_sage():
             print(f'Epoch {epoch+1}: Loss = {loss.item()}')
             if epoch == 99:
                 print(out)
+                print(out[2][1].item())

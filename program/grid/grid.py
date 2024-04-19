@@ -2,7 +2,7 @@ from __future__ import annotations
 import csv
 from program.grid.grid_cell import GridCell
 from program.location.location import Location
-from program.location.zone import Zone
+from program.zone.zone import Zone
 from program.logger import LOGGER
 from program.utils import IdProvider
 

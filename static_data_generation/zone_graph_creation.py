@@ -1,7 +1,7 @@
 
 import csv
 from program.grid.grid import Grid
-from program.location.zone import Zone
+from program.zone.zone import Zone
 
 
 def create_zone_graph() -> None:

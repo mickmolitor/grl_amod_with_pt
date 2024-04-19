@@ -13,6 +13,8 @@ from params.program_params import Mode, ProgramParams
 from program.state.state_value_networks import StateValueNetworks
 from program.order.order import Order
 from program.grid.grid_cell import GridCell
+from program.zone.zone import Zone
+from program.zone.zones import Zones
 
 
 # Define here how the grid and intervals should look like
@@ -34,6 +36,11 @@ class State:
 
         self.current_interval = TimeSeries.get_instance().intervals[0]
         self.current_time = self.current_interval.start
+
+        # (# in last interval, # now)
+        self.amount_of_orders_per_zone: dict[Zone, tuple[float, float]] = {zone: (0,0) for zone in Zones.get_zones()}
+        # (# idle, # occupied)
+        self.amount_of_vehicles_per_zone: dict[Zone, tuple[int, int]] = {zone: (0,0) for zone in Zones.get_zones()}
 
         # if EXECUTION_MODE == Mode.TABULAR -> [(reward, current_interval, current_zone, next_interval, next_zone)]
         # else -> [(reward, current_location, current_time, next_location, next_time)]
@@ -156,11 +163,14 @@ class State:
         for order in orders:
             self.orders_dict[order.id] = order
 
-    def increment_time_interval(self, current_time: GridInterval) -> None:
+    def increment_time_interval(self, current_time: Time) -> None:
         if self.current_interval.end.is_before(current_time):
             self.current_interval = TimeSeries.get_instance().intervals[
                 self.current_interval.index + 1
             ]
+            for zone in Zones.get_zones():
+                self.amount_of_orders_per_zone[zone][0] = self.amount_of_orders_per_zone[zone][1]
+                self.amount_of_orders_per_zone[zone][1] = 0
         self.current_time = current_time
 
     def relocate(self) -> None:
@@ -245,3 +255,29 @@ class State:
                     relocation_cell.zone,
                     int(vehicle.current_position.distance_to(relocation_cell.center)),
                 )
+    
+    def update_state(self) -> None:
+        zones = Zones.get_zones()
+        vehicles = Vehicles.get_vehicles()
+        amount_orders_now_per_zone = {zone: 0 for zone in zones}
+
+        for order in Orders.get_orders_by_time()[self.current_time]:
+            amount_orders_now_per_zone[order.zone] += 1
+
+        for zone in zones:
+            self.amount_of_orders_per_zone[zone][1] += amount_orders_now_per_zone[zone]
+        
+        for zone in zones:
+            self.amount_of_orders_per_zone[zone] = (0, 0)
+
+        for vehicle in vehicles:
+            idx = 1 if vehicle.is_occupied() else 0
+            zone = Grid.get_instance().find_zone(vehicle.current_position)
+            self.amount_of_vehicles_per_zone[zone][idx] += 1
+    
+    def get_current_order_quota(self, zone: Zone) -> float:
+        difference_since_last_interval = self.current_interval.start.distance_to(self.current_time) / 60
+        return self.amount_of_orders_per_zone[zone][1] / difference_since_last_interval
+    
+    def get_last_order_quota(self, zone: Zone) -> float:
+        return self.amount_of_orders_per_zone[zone][1] / 30

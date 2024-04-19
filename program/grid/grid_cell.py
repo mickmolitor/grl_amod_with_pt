@@ -1,5 +1,5 @@
 from program.location.location import Location
-from program.location.zone import Zone
+from program.zone.zone import Zone
 from program.utils import IdProvider
 
 ID_PROVIDER = IdProvider()

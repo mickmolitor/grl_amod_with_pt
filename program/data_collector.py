@@ -2,7 +2,7 @@ import csv
 from program.interval.time import Time
 from program.order import Order
 from program.location.location import Location
-from program.location.zone import Zone
+from program.zone.zone import Zone
 from params.program_params import ProgramParams
 
 
