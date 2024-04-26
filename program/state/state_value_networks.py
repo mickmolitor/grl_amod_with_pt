@@ -1,20 +1,15 @@
 from __future__ import annotations
-import math
 import os
 import torch
-from torch import Tensor
-import torch.optim as optim
 
 from program.action.action import Action
-from program.graph_reinforcement_learning.deep_neural_network import DeepNeuralNetwork
-from program.graph_reinforcement_learning.graph_sage import GraphSAGE
+from program.action.vehicle_action_pair import VehicleActionPair
 from program.graph_reinforcement_learning.main_network import MainNetwork
 from program.graph_reinforcement_learning.target_network import TargetNetwork
 from program.graph_reinforcement_learning.temporal_difference_loss import (
     TemporalDifferenceLoss,
 )
 from program.interval.time import Time
-from program.state.state import State
 from program.zone.zone import Zone
 from program.logger import LOGGER
 
@@ -36,20 +31,21 @@ class StateValueNetworks:
         self.target_net = TargetNetwork()
         self.loss_fn = TemporalDifferenceLoss()
 
-        self.iteration = 1
+        self.iteration = 0
 
-    # Travel time in seconds
-    def get_main_state_value(
-        self, action: Action, origin_zone: Zone, destination_zone: Zone
-    ) -> float:
-        return self.main_net.get_state_value(action, origin_zone, destination_zone)
-
-    def get_target_state_value(
-        self, action: Action, origin_zone: Zone, destination_zone: Zone
-    ) -> float:
-        return self.target_net.get_state_value(action, origin_zone, destination_zone)
+    def get_target_state_value(self, action: Action, zone: Zone, time: Time) -> float:
+        return self.target_net.get_state_value(action, zone, time)
 
     def initialize_iteration(self) -> None:
+        from state.state import State
+        self.main_net.clear()
+        self.target_net.clear()
+
+        if self.iteration % ProgramParams.MAIN_AND_TARGET_NET_SYNC_ITERATIONS == 0:
+            LOGGER.debug("Transfer weights from main to target network")
+            self.target_net.load_GNN_state_dict(self.main_net.get_GNN_state_dict())
+            self.target_net.load_DNN_state_dict(self.main_net.get_DNN_state_dict())
+
         self.main_net.optimizer_zero_grad()
         state = State.get_state()
         zone_graph = ZoneGraph.get_instance()
@@ -58,87 +54,107 @@ class StateValueNetworks:
         for zone in Zones.get_zones():
             current_orders = state.get_current_order_quota(zone)
             last_orders = state.get_last_order_quota(zone)
-            idle, occupied = state.amount_of_vehicles_per_zone[zone]
+            idle = state.get_idle_vehicle_quota(zone)
+            occupied = state.get_occupied_vehicle_quota(zone)
             # TODO implement average reduction
             average_reduction = 0
             zone_to_features[zone] = ZoneGraph.Feature(
                 current_orders, last_orders, occupied, idle, average_reduction
             )
         zone_graph.update_features(zone_to_features)
-        self.main_net.calculate_graph_embedding(zone_graph.get_edge_index(),zone_graph.get_feature_index())
-        self.target_net.calculate_graph_embedding(zone_graph.get_edge_index(),zone_graph.get_feature_index())
+        self.main_net.calculate_graph_embedding(
+            zone_graph.get_edge_index(), zone_graph.get_feature_index()
+        )
+        self.target_net.calculate_graph_embedding(
+            zone_graph.get_edge_index(), zone_graph.get_feature_index()
+        )
 
     # We want a list of action tuples here since the error function is calculated in each iteration for all changes
-    def adjust_state_values(self, action_tuples: list[tuple]) -> None:
+    def adjust_state_values(
+        self, action_reward_tuples: list[tuple[Zone, VehicleActionPair, float]]
+    ) -> None:
         from state.state import State
+        
+        # Calculate main values
+        for tup in action_reward_tuples:
+            self.main_net.get_state_value(tup[1].action, tup[0], State.get_state().current_time)
 
-        trajectories = []
-        for tup in action_tuples:
-            trajectories.append(
+        td_values = []
+        for tup in action_reward_tuples:
+            td_values.append(
                 {
-                    "reward": tup[0],
-                    "current_zone": tup[1].id,
-                    "current_time": tup[2].to_total_seconds(),
-                    "target_zone": tup[3].id,
-                    "target_time": tup[4].to_total_seconds(),
+                    "reward": tup[2],
+                    "main_value": self.main_net.get_state_value_by_action_id(
+                        tup[1].action.id
+                    ),
+                    "target_value": self.target_net.get_state_value_by_action_id(
+                        tup[1].action.id
+                    ),
+                    "discount_value": ProgramParams.DISCOUNT_FACTOR(
+                        tup[1].get_total_vehicle_travel_time_in_seconds()
+                    ),
                 }
             )
-        LOGGER.debug("Adjust weights for deep state value networks")
-        if (
-            State.get_state().current_time.to_total_minutes()
-            % ProgramParams.MAIN_AND_TARGET_NET_SYNC_ITERATIONS
-            == 0
-        ):
-            LOGGER.debug("Transfer weights from main to target network")
-            self.target_net.load_state_dict(self.main_net.state_dict())
-
-        LOGGER.debug("Forward propagation")
-        state_values = []
-        for trajectory in trajectories:
-            output_main = self.main_net(
-                torch.Tensor(
-                    [
-                        trajectory["current_zone"],
-                    ]
-                )
-            )
-            output_target = self.target_net(
-                torch.Tensor(
-                    [
-                        trajectory["target_zone"],
-                    ]
-                )
-            )
-            state_values.append((trajectory, output_main, output_target))
 
         LOGGER.debug("Backward propagation and optimization")
         # Backward and optimize
-        self.optimizer.zero_grad()
+        self.main_net.optimizer_zero_grad()
         # Compute loss
-        loss = self.loss_fn(self.main_net, state_values)
+        loss = self.loss_fn(td_values)
         LOGGER.debug(f"Temporal difference error: {float(loss)}")
         loss.backward()
-        self.optimizer.step()
+        self.main_net.optimizer_step()
+
+        self.iteration += 1
 
     def import_weights(self) -> None:
-        if os.path.exists("code/training_data/main_net_state_dict.pth"):
-            self.main_net.load_state_dict(
-                torch.load("code/training_data/main_net_state_dict.pth")
+        # Main networks
+        if os.path.exists("training_data/main_net_GNN_state_dict.pth"):
+            self.main_net.load_GNN_state_dict(
+                torch.load("training_data/main_net_GNN_state_dict.pth")
+            )
+        if os.path.exists("training_data/main_net_DNN_state_dict.pth"):
+            self.main_net.load_DNN_state_dict(
+                torch.load("training_data/main_net_DNN_state_dict.pth")
             )
 
-        if os.path.exists("code/training_data/target_net_state_dict.pth"):
-            self.target_net.load_state_dict(
-                torch.load("code/training_data/target_net_state_dict.pth")
+        # Target networks
+        if os.path.exists("training_data/target_net_GNN_state_dict.pth"):
+            self.target_net.load_GNN_state_dict(
+                torch.load("training_data/target_net_GNN_state_dict.pth")
             )
         else:
-            self.target_net.load_state_dict(self.main_net.state_dict())
+            self.target_net.load_GNN_state_dict(
+                torch.load("training_data/main_net_GNN_state_dict.pth")
+            )
+        if os.path.exists("training_data/target_net_DNN_state_dict.pth"):
+            self.target_net.load_DNN_state_dict(
+                torch.load("training_data/target_net_DNN_state_dict.pth")
+            )
+        else:
+            self.target_net.load_DNN_state_dict(
+                torch.load("training_data/main_net_DNN_state_dict.pth")
+            )
 
     def export_weights(self) -> None:
+        # Main networks
         torch.save(
-            self.main_net.state_dict(), "code/training_data/main_net_state_dict.pth"
+            self.main_net.get_GNN_state_dict(),
+            "training_data/main_net_GNN_state_dict.pth",
         )
         torch.save(
-            self.target_net.state_dict(), "code/training_data/target_net_state_dict.pth"
+            self.main_net.get_DNN_state_dict(),
+            "training_data/main_net_DNN_state_dict.pth",
+        )
+
+        # Target networks
+        torch.save(
+            self.target_net.get_GNN_state_dict(),
+            "training_data/main_net_GNN_state_dict.pth",
+        )
+        torch.save(
+            self.target_net.get_DNN_state_dict(),
+            "training_data/main_net_DNN_state_dict.pth",
         )
 
     def export_offline_policy_weights(self, previous_total_minutes: int) -> None:
@@ -159,103 +175,3 @@ class StateValueNetworks:
             self.target_net.state_dict(),
             f"code/training_data/ope_target_{daystr}_{previous_total_minutes}.pth",
         )
-
-    # Used for training only
-    def import_offline_policy_weights(self, current_total_minutes: int) -> None:
-        daystr = ""
-        wd = ProgramParams.SIMULATION_DATE.weekday()
-        if wd < 5:
-            daystr = "wd"
-        elif wd == 5:
-            daystr = "sat"
-        else:
-            daystr = "sun"
-
-        if current_total_minutes > 0:
-            previous_total_minutes_ind = (
-                ProgramParams.TIME_SERIES_BREAKPOINTS().index(current_total_minutes) - 1
-            )
-            previous_total_minutes = ProgramParams.TIME_SERIES_BREAKPOINTS()[
-                previous_total_minutes_ind
-            ]
-            self.export_offline_policy_weights(previous_total_minutes)
-
-        # Load state dict if exists
-        if os.path.exists(
-            f"code/training_data/ope_{daystr}_{current_total_minutes}.pth"
-        ):
-            self.main_net.load_state_dict(
-                torch.load(
-                    f"code/training_data/ope_{daystr}_{current_total_minutes}.pth"
-                )
-            )
-        if os.path.exists(
-            f"code/training_data/ope_target_{daystr}_{current_total_minutes}.pth"
-        ):
-            self.target_net.load_state_dict(
-                torch.load(
-                    f"code/training_data/ope_target_{daystr}_{current_total_minutes}.pth"
-                )
-            )
-        else:
-            self.target_net.load_state_dict(self.main_net.state_dict())
-
-        self.optimizer = optim.Adam(self.main_net.parameters(), lr=3 * math.exp(-4))
-        self.main_net.train()
-
-    def load_offline_policy_weights(self, current_total_minutes: int) -> None:
-        daystr = ""
-        wd = ProgramParams.SIMULATION_DATE.weekday()
-        if wd < 5:
-            daystr = "wd"
-        elif wd == 5:
-            daystr = "sat"
-        else:
-            daystr = "sun"
-
-        ope_net = NeuroNet()
-        ope_target_net = NeuroNet()
-
-        # Load state dict if exists
-        if os.path.exists(
-            f"code/training_data/ope_{daystr}_{current_total_minutes}.pth"
-        ):
-            ope_net.load_state_dict(
-                torch.load(
-                    f"code/training_data/ope_{daystr}_{current_total_minutes}.pth"
-                )
-            )
-        if os.path.exists(
-            f"code/training_data/ope_target_{daystr}_{current_total_minutes}.pth"
-        ):
-            ope_target_net.load_state_dict(
-                torch.load(
-                    f"code/training_data/ope_target_{daystr}_{current_total_minutes}.pth"
-                )
-            )
-        else:
-            ope_target_net.load_state_dict(ope_net.state_dict())
-
-        ope_state = ope_net.state_dict()
-        ope_target_state = ope_target_net.state_dict()
-        main_state = self.main_net.state_dict()
-        target_state = self.target_net.state_dict()
-
-        new_target_state = {}
-        new_main_state = {}
-
-        for key in main_state:
-            new_main_state[key] = (
-                ProgramParams.OMEGA * main_state[key]
-                + (1 - ProgramParams.OMEGA) * ope_state[key]
-            )
-        for key in target_state:
-            new_target_state[key] = (
-                ProgramParams.OMEGA * target_state[key]
-                + (1 - ProgramParams.OMEGA) * ope_target_state[key]
-            )
-
-        self.main_net.load_state_dict(new_main_state)
-        self.target_net.load_state_dict(new_target_state)
-        self.optimizer = optim.Adam(self.main_net.parameters(), lr=3 * math.exp(-4))
-        self.main_net.train()

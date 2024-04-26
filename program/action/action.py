@@ -8,13 +8,12 @@ class Action:
     def __init__(self, route: Route) -> None:
         self.id = ID_PROVIDER.get_id()
         self.route = route
-        self.idling = route == None
 
     def is_idling(self) -> bool:
-        return self.idling
+        return self.route == None
 
     def is_route(self) -> bool:
-        return not self.idling
+        return not self.route != None
 
     def __str__(self):
         return f"{f'Route {self.route.id}' if self.is_route() else 'Idling'}"

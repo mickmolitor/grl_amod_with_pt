@@ -9,19 +9,17 @@ class TemporalDifferenceLoss(nn.Module):
     def __init__(self):
         super(TemporalDifferenceLoss, self).__init__()
 
-    def forward(self, trajectories_and_state_values):
+    def forward(self, td_values: list[dict]):
         loss = 0
-        for x in trajectories_and_state_values:
-            start_state_value = x[1]
-            end_state_value = x[2]
-            start_t = x[0]["current_time"]
-            end_t = x[0]["target_time"]
-            duration = end_t - start_t if end_t > start_t else 86400 - start_t + end_t
-            reward = x[0]["reward"]
+        for x in td_values:
+            main_value = x["main_value"]
+            target_value = x["target_value"]
+            discount_value = x["discount_value"]
+            reward = x["reward"]
             loss += (
-                start_state_value
+                main_value
                 - reward
-                + ProgramParams.DISCOUNT_FACTOR(duration) * end_state_value
+                + discount_value * target_value
             ) ** 2
 
         return loss

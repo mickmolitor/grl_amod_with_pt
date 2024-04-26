@@ -37,14 +37,12 @@ class State:
         self.current_interval = TimeSeries.get_instance().intervals[0]
         self.current_time = self.current_interval.start
 
-        # (# in last interval, # now)
-        self.amount_of_orders_per_zone: dict[Zone, tuple[float, float]] = {zone: (0,0) for zone in Zones.get_zones()}
-        # (# idle, # occupied)
-        self.amount_of_vehicles_per_zone: dict[Zone, tuple[int, int]] = {zone: (0,0) for zone in Zones.get_zones()}
+        # {"last_interval": num, "now": num}
+        self.amount_of_orders_per_zone: dict[Zone, dict[str, float]] = {zone: {"last_interval": 0, "now": 0} for zone in Zones.get_zones()}
+        # {"idle": num, "occupied": num}
+        self.amount_of_vehicles_per_zone: dict[Zone, dict[str, float]] = {zone: {"idle": 0, "occupied": 0} for zone in Zones.get_zones()}
 
-        # if EXECUTION_MODE == Mode.TABULAR -> [(reward, current_interval, current_zone, next_interval, next_zone)]
-        # else -> [(reward, current_location, current_time, next_location, next_time)]
-        self.action_tuples = []
+        self.action_reward_tuples: list[tuple[Zone, VehicleActionPair, float]] = []
 
     def apply_state_change(self, vehicle_action_pairs: list[VehicleActionPair]) -> None:
         order_time_reduction_quota = []
@@ -53,18 +51,16 @@ class State:
             vehicle = pair.vehicle
             action = pair.action
 
-            if action.is_idling():
-                if ProgramParams.EXECUTION_MODE == Mode.GRAPH_REINFORCEMENT_LEARNING:
-                    self.action_tuples.append(
-                        (
-                            pair.weight,
-                            Grid.get_instance().find_zone(vehicle.current_position),
-                            self.current_time,
-                            Grid.get_instance().find_zone(vehicle.current_position),
-                            self.current_time.add_minutes(1),
-                        )
+            if ProgramParams.EXECUTION_MODE == Mode.GRAPH_REINFORCEMENT_LEARNING:
+                self.action_reward_tuples.append(
+                    (
+                        Grid.get_instance().find_zone(vehicle.current_position),
+                        pair,
+                        pair.weight,
                     )
-            else:
+                )
+
+            if action.is_route():
                 # Here we have to plan a route for the vehicle to take. The route consists of two parts:
                 # Pick up the person and drive the person to the desired location. Afterwards we calculate the total
                 # travel time. This one and the vehicles final position are saved together with him. In each interval,
@@ -85,21 +81,6 @@ class State:
                 if Grid.get_instance().find_zone(vehicle_final_destination).id == 9999:
                     LOGGER.warn(
                         f"Vehicle {vehicle.id} goes to forbidden zone by order {pair.action.route.order.id}"
-                    )
-
-                reward = action.route.time_reduction
-
-                if ProgramParams.EXECUTION_MODE == Mode.GRAPH_REINFORCEMENT_LEARNING:
-                    self.action_tuples.append(
-                        (
-                            reward,
-                            Grid.get_instance().find_zone(vehicle.current_position),
-                            self.current_time,
-                            action.route.vehicle_destination_cell.zone,
-                            self.current_time.add_seconds(
-                                pair.get_total_vehicle_travel_time_in_seconds()
-                            ),
-                        )
                     )
 
                 # Save reduction quota
@@ -144,9 +125,9 @@ class State:
 
     def apply_state_changes_to_value_function(self) -> None:
         if ProgramParams.EXECUTION_MODE == Mode.GRAPH_REINFORCEMENT_LEARNING:
-            StateValueNetworks.get_instance().adjust_state_values(self.action_tuples)
+            StateValueNetworks.get_instance().adjust_state_values(self.action_reward_tuples)
 
-        self.action_tuples = []
+        self.action_reward_tuples = []
 
     def update_order_expiry_duration(self) -> None:
         duration = ProgramParams.SIMULATION_UPDATE_RATE
@@ -169,8 +150,11 @@ class State:
                 self.current_interval.index + 1
             ]
             for zone in Zones.get_zones():
-                self.amount_of_orders_per_zone[zone][0] = self.amount_of_orders_per_zone[zone][1]
-                self.amount_of_orders_per_zone[zone][1] = 0
+                self.amount_of_orders_per_zone[zone]["last_interval"] = self.amount_of_orders_per_zone[zone]["now"]
+                self.amount_of_orders_per_zone[zone]["now"] = 0
+                self.amount_of_vehicles_per_zone[zone]["idle"] = 0
+                self.amount_of_vehicles_per_zone[zone]["occupied"] = 0
+
         self.current_time = current_time
 
     def relocate(self) -> None:
@@ -265,15 +249,15 @@ class State:
             amount_orders_now_per_zone[order.zone] += 1
 
         for zone in zones:
-            self.amount_of_orders_per_zone[zone][1] += amount_orders_now_per_zone[zone]
-        
-        for zone in zones:
-            self.amount_of_orders_per_zone[zone] = (0, 0)
+            self.amount_of_orders_per_zone[zone]["now"] += amount_orders_now_per_zone[zone]
 
         for vehicle in vehicles:
-            idx = 1 if vehicle.is_occupied() else 0
+            if vehicle.is_occupied():
+                key = "occupied"
+            else:
+                key = "idle"
             zone = Grid.get_instance().find_zone(vehicle.current_position)
-            self.amount_of_vehicles_per_zone[zone][idx] += 1
+            self.amount_of_vehicles_per_zone[zone][key] += 1
     
     def get_current_order_quota(self, zone: Zone) -> float:
         difference_since_last_interval = self.current_interval.start.distance_to(self.current_time) / 60
@@ -281,3 +265,11 @@ class State:
     
     def get_last_order_quota(self, zone: Zone) -> float:
         return self.amount_of_orders_per_zone[zone][1] / 30
+
+    def get_idle_vehicle_quota(self, zone: Zone) -> float:
+        difference_since_last_interval = self.current_interval.start.distance_to(self.current_time) / 60
+        return self.amount_of_vehicles_per_zone[zone]["idle"] / difference_since_last_interval
+
+    def get_occupied_vehicle_quota(self, zone: Zone) -> float:
+        difference_since_last_interval = self.current_interval.start.distance_to(self.current_time) / 60
+        return self.amount_of_vehicles_per_zone[zone]["occupied"] / difference_since_last_interval
