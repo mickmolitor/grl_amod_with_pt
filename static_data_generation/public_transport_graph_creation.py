@@ -2,6 +2,7 @@ from collections import deque, namedtuple
 import csv
 import math
 from params.program_params import ProgramParams
+from program.logger import LOGGER
 
 # This file generates the fastest connection public transit network only
 # This is a Dijkstra algorithm. For a faster solution use the Floyd-Warshall algorithm to solve the all-pair shortest path problem (see code/model_builder)
@@ -129,16 +130,18 @@ def create_edges(data):
                 edges.append((id2, id1, cost))
                 remaining_edges_count += 1
 
-    print(f"Number of edges within the same line: {line_edges_count}")
-    print(f"Number of edges for transfers at the same station: {transfer_edges_count}")
-    print(f"Number of remaining edges: {remaining_edges_count}")
+    LOGGER.info(f"Number of edges within the same line: {line_edges_count}")
+    LOGGER.info(f"Number of edges for transfers at the same station: {transfer_edges_count}")
+    LOGGER.info(f"Number of remaining edges: {remaining_edges_count}")
     return edges
 
 # calculation of shortest paths
 def calculate_shortest_paths(graph, nodes):
     paths = []
-    for start_node in nodes:
-        for end_node in nodes:
+    for i, start_node in enumerate(nodes):
+        for j, end_node in enumerate(nodes):
+            if i*j % (len(nodes)*len(nodes)*0.05) == 0:
+                LOGGER.info(f"{i*j} of {len(nodes)*len(nodes)} ({i*j // (len(nodes)*len(nodes)*0.05)}%) shortest paths calculated.")
             if start_node != end_node:
                 shortest_path = graph.dijkstra(start_node, end_node)
                 paths.append((start_node, end_node, shortest_path))
@@ -161,5 +164,5 @@ def generate_shortest_paths_graph():
 
     nodes = list(graph.vertices())  # List of all nodes (stations)
     shortest_paths = calculate_shortest_paths(graph, nodes)
-    print("Saving begins")
+    LOGGER.info("Saving begins")
     save_paths_to_csv(shortest_paths, "data/shortest_paths.csv")
