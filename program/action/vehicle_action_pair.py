@@ -1,6 +1,6 @@
-from action.action import Action
+from program.action.action import Action
 from program.vehicle.vehicle import Vehicle
-from location.location import Location
+from program.location.location import Location
 
 
 class VehicleActionPair:
@@ -18,7 +18,7 @@ class VehicleActionPair:
         if self.action.is_idling():
             return 0
         return (
-            self.driver.current_position.distance_to(self.action.route.origin)
+            self.vehicle.current_position.distance_to(self.action.route.origin)
             // ProgramParams.VEHICLE_SPEED
         )
 
@@ -42,12 +42,12 @@ class VehicleActionPair:
             )
         return (
             vehicle_distance_with_passenger
-            + self.driver.current_position.distance_to(self.action.route.origin)
+            + self.vehicle.current_position.distance_to(self.action.route.origin)
         )
 
     def get_vehicle_destination(self) -> Location:
         if self.action.is_idling():
-            return self.driver.current_position
+            return self.vehicle.current_position
         if self.action.route.stations == []:
             return self.action.route.destination
         return self.action.route.stations[0].position

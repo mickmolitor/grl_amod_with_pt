@@ -6,7 +6,7 @@ from params.program_stats import ProgramStats
 from program.public_transport.station import Station
 from program.vehicle.vehicle import Vehicle
 from program.logger import LOGGER
-from state.state import State
+from program.state.state import State
 import numpy as np
 from ortools.graph.python import min_cost_flow
 

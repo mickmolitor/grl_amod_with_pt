@@ -37,7 +37,7 @@ class StateValueNetworks:
         return self.target_net.get_state_value(action, zone, time)
 
     def initialize_iteration(self) -> None:
-        from state.state import State
+        from program.state.state import State
         self.main_net.clear()
         self.target_net.clear()
 
@@ -52,6 +52,8 @@ class StateValueNetworks:
         zone_to_features = {}
         # Update zone graph
         for zone in Zones.get_zones():
+            if zone.is_empty():
+                continue
             current_orders = state.get_current_order_quota(zone)
             last_orders = state.get_last_order_quota(zone)
             idle = state.get_idle_vehicle_quota(zone)
@@ -73,7 +75,7 @@ class StateValueNetworks:
     def adjust_state_values(
         self, action_reward_tuples: list[tuple[Zone, VehicleActionPair, float]]
     ) -> None:
-        from state.state import State
+        from program.state.state import State
         
         # Calculate main values
         for tup in action_reward_tuples:
@@ -123,7 +125,7 @@ class StateValueNetworks:
             self.target_net.load_GNN_state_dict(
                 torch.load("training_data/target_net_GNN_state_dict.pth")
             )
-        else:
+        elif os.path.exists("training_data/main_net_GNN_state_dict.pth"):
             self.target_net.load_GNN_state_dict(
                 torch.load("training_data/main_net_GNN_state_dict.pth")
             )
@@ -131,7 +133,7 @@ class StateValueNetworks:
             self.target_net.load_DNN_state_dict(
                 torch.load("training_data/target_net_DNN_state_dict.pth")
             )
-        else:
+        elif os.path.exists("training_data/main_net_DNN_state_dict.pth"):
             self.target_net.load_DNN_state_dict(
                 torch.load("training_data/main_net_DNN_state_dict.pth")
             )

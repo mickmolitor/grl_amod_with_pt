@@ -1,5 +1,5 @@
-from interval.time import Time
-from utils import IdProvider
+from program.interval.time import Time
+from program.utils import IdProvider
 
 ID_PROVIDER = IdProvider()
 

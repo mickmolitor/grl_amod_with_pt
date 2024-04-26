@@ -5,6 +5,7 @@ from program.location.location import Location
 from program.zone.zone import Zone
 from program.logger import LOGGER
 from program.utils import IdProvider
+from program.zone.zones import Zones
 
 
 ID_PROVIDER = IdProvider()
@@ -19,7 +20,7 @@ class Grid:
         return Grid._grid
 
     def __init__(self):
-        self.zones_dict: dict[int, Zone] = {zone.id: zone for zone in Zone.get_zones()}
+        self.zones_dict: dict[int, Zone] = {zone.id: zone for zone in Zones.get_zones()}
         self.cells_dict: dict[int, list[GridCell]] = {
             zone_id: [] for zone_id in self.zones_dict.keys()
         }

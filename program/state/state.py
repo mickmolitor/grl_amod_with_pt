@@ -1,5 +1,6 @@
 from __future__ import annotations
 import random
+from program.action.action import Action
 from program.action.vehicle_action_pair import VehicleActionPair
 from program.data_collector import DataCollector
 from program.grid.grid import Grid
@@ -158,7 +159,7 @@ class State:
         self.current_time = current_time
 
     def relocate(self) -> None:
-        from grid.grid import Grid
+        from program.grid.grid import Grid
 
         # Relocate vehicles which idle for long time
         for vehicle in Vehicles.get_vehicles():
@@ -194,7 +195,7 @@ class State:
                     ):
                         state_value = (
                             StateValueNetworks.get_instance().get_target_state_value(
-                                cell.zone, self.current_time.add_seconds(driving_time)
+                                Action(None), cell.zone, self.current_time.add_seconds(driving_time)
                             )
                         )
                     else:
@@ -261,15 +262,21 @@ class State:
     
     def get_current_order_quota(self, zone: Zone) -> float:
         difference_since_last_interval = self.current_interval.start.distance_to(self.current_time) / 60
-        return self.amount_of_orders_per_zone[zone][1] / difference_since_last_interval
+        if difference_since_last_interval == 0:
+            return 0
+        return self.amount_of_orders_per_zone[zone]["now"] / difference_since_last_interval
     
     def get_last_order_quota(self, zone: Zone) -> float:
-        return self.amount_of_orders_per_zone[zone][1] / 30
+        return self.amount_of_orders_per_zone[zone]["last_interval"] / 30
 
     def get_idle_vehicle_quota(self, zone: Zone) -> float:
         difference_since_last_interval = self.current_interval.start.distance_to(self.current_time) / 60
+        if difference_since_last_interval == 0:
+            return 0
         return self.amount_of_vehicles_per_zone[zone]["idle"] / difference_since_last_interval
 
     def get_occupied_vehicle_quota(self, zone: Zone) -> float:
         difference_since_last_interval = self.current_interval.start.distance_to(self.current_time) / 60
+        if difference_since_last_interval == 0:
+            return 0
         return self.amount_of_vehicles_per_zone[zone]["occupied"] / difference_since_last_interval

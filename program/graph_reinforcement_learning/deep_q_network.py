@@ -9,7 +9,6 @@ from program.action.action import Action
 from program.graph_reinforcement_learning.deep_neural_network import DeepNeuralNetwork
 from program.graph_reinforcement_learning.graph_sage import GraphSAGE
 from program.interval.time import Time
-from program.state.state import State
 from program.zone.zone import Zone
 from program.zone.zone_graph import ZoneGraph
 
@@ -30,6 +29,7 @@ class DeepQNetwork:
     def get_state_value(
         self, action: Action, zone: Zone, time: Time
     ) -> float:
+        from program.state.state import State
         zone_graph = ZoneGraph.get_instance()
 
         state_features = zone_graph.get_feature(zone)
@@ -50,7 +50,7 @@ class DeepQNetwork:
         node = zone_graph.get_node_id(zone)
         graph_embedding = self.current_graph_embedding[node]
 
-        combined_features = torch.cat([state_embedding, graph_embedding], dim=1)
+        combined_features = torch.cat([state_embedding, graph_embedding], dim=0)
 
         state_value = self.dnn(combined_features)
 

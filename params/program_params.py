@@ -22,7 +22,7 @@ class ProgramParams:
 
     IDLING_COST = 5
 
-    AMOUNT_OF_DRIVERS = 100
+    AMOUNT_OF_VEHICLES = 100
 
     LEARNING_RATE = 0.025  # See Tang et al. (2021)
 
@@ -95,7 +95,7 @@ class ProgramParams:
     ############### FIX ###############
     # File paths to orders
     def ORDERS_FILE_PATH() :
-        return f"code/data/{ProgramParams.DATA_SET.value}/orders_{ProgramParams.SIMULATION_DATE.strftime('%Y-%m-%d')}.csv"
+        return f"data/{ProgramParams.DATA_SET.value}/orders_{ProgramParams.SIMULATION_DATE.strftime('%Y-%m-%d')}_reduced.csv"
     
     # Time it takes until the simulation updates in seconds
     SIMULATION_UPDATE_RATE = 60 #FIX

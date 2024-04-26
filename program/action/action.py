@@ -13,7 +13,7 @@ class Action:
         return self.route == None
 
     def is_route(self) -> bool:
-        return not self.route != None
+        return self.route != None
 
     def __str__(self):
         return f"{f'Route {self.route.id}' if self.is_route() else 'Idling'}"

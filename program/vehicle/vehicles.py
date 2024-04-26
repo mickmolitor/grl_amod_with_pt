@@ -1,7 +1,7 @@
 import csv
 from program.vehicle.vehicle import Vehicle
-from grid.grid import Grid
-from location.location import Location
+from program.grid.grid import Grid
+from program.location.location import Location
 
 
 # Singleton class containing all the vehicles
@@ -32,3 +32,6 @@ class Vehicles:
                         vehicle.current_position.lon,
                     ]
                 )
+    
+    def raze_vehilces():
+        Vehicles._vehicles = None

@@ -1,7 +1,7 @@
 from __future__ import annotations
-from interval.grid_interval import GridInterval
-from interval.time import Time
-from utils import IdProvider
+from program.interval.grid_interval import GridInterval
+from program.interval.time import Time
+from program.utils import IdProvider
 from params.program_params import ProgramParams
 
 ID_PROVIDER = IdProvider()

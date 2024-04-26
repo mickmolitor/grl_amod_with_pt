@@ -14,7 +14,7 @@ class MainNetwork(DeepQNetwork):
         # Optimizer
         self.optimizer_dnn = optim.Adam(self.dnn.parameters(), lr=3 * math.exp(-4))
         self.optimizer_gnn = optim.Adam(
-            self.graph_sage.parameters, lr=3 * math.exp(-4)
+            self.graph_sage.parameters(), lr=3 * math.exp(-4)
         )
     
     def optimizer_zero_grad(self) -> None:

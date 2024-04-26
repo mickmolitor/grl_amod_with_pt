@@ -29,14 +29,14 @@ class Order:
             [],
             self.start.distance_to(self.end) / ProgramParams.WALKING_SPEED,
         )
-        from public_transport.fastest_station_connection_network import (
+        from program.public_transport.fastest_station_connection_network import (
             FastestStationConnectionNetwork,
         )
 
         fastest_connection_network = FastestStationConnectionNetwork.get_instance()
 
         # 1. Get the closest start and end station for each line
-        from public_transport.station import Station
+        from program.public_transport.station import Station
 
         origins: list[Station] = []
         destinations: list[Station] = []

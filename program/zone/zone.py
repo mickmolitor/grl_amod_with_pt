@@ -14,3 +14,6 @@ class Zone:
             zones.extend(self.adjacent_zones_dict[i])
 
         return zones
+    
+    def is_empty(self) -> bool:
+        return self.id == 9999

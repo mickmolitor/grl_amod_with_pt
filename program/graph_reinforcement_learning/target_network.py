@@ -24,4 +24,4 @@ class TargetNetwork(DeepQNetwork):
     def calculate_graph_embedding(self, edge_index: tuple[list[int], list[int]], features: list[tuple[int, int, int, int, float]]) -> None:
         # Prevent backward propagation to effect target network weights
         with torch.no_grad():
-            super(TargetNetwork, self).get_state_value(edge_index, features)
+            super(TargetNetwork, self).calculate_graph_embedding(edge_index, features)

@@ -29,7 +29,7 @@ def generate_routes(orders: list[Order]) -> dict[Order, list[Route]]:
 
         if order.direct_connection[1] > ProgramParams.L1:
             # 1. Get the closest start and end station for each line
-            from public_transport.station import Station
+            from program.public_transport.station import Station
 
             origins: list[Station] = []
             destinations: list[Station] = []
@@ -132,7 +132,6 @@ def generate_vehicle_action_pairs(
             ):
                 operated_orders.add(order)
                 vehicle_to_orders_dict[vehicle].append(order)
-            
 
     best_actions: dict[Order, tuple[Action, float]] = {}
     # 4. Calculate the actions Q-value for each route that maybe operated and save the best action
@@ -142,7 +141,9 @@ def generate_vehicle_action_pairs(
         for action in order_to_actions_dict[order]:
             # For the Q-value calculation we expect the medium pickup distance threshold driving time
             arrival_time = State.get_state().current_time.add_seconds(
-                ProgramParams.PICK_UP_DISTANCE_THRESHOLD / ProgramParams.VEHICLE_SPEED / 2
+                ProgramParams.PICK_UP_DISTANCE_THRESHOLD
+                / ProgramParams.VEHICLE_SPEED
+                / 2
             )
             # weight = time reduction for passenger + state value after this option
             if ProgramParams.EXECUTION_MODE == Mode.GRAPH_REINFORCEMENT_LEARNING:
@@ -158,9 +159,7 @@ def generate_vehicle_action_pairs(
             weight = (
                 action.route.time_reduction
                 + ProgramParams.DISCOUNT_FACTOR(
-                    State.get_state().current_time.distance_to(
-                        arrival_time
-                    )
+                    State.get_state().current_time.distance_to(arrival_time)
                 )
                 * state_value
             )
@@ -182,7 +181,11 @@ def generate_vehicle_action_pairs(
         vehicle_action_pairs.append(vehicle_to_idling_dict[vehicle])
 
         for order in vehicle_to_orders_dict[vehicle]:
-            vehicle_action_pairs.append(best_actions[order])
+            vehicle_action_pairs.append(
+                VehicleActionPair(
+                    vehicle, best_actions[order][0], best_actions[order][1]
+                )
+            )
 
     return vehicle_action_pairs
 
@@ -192,22 +195,20 @@ def solve_optimization_problem(
 ) -> list[VehicleActionPair]:
     # solve_as_min_cost_flow_problem(vehicle_action_pairs)
     vehicle_action_pairs = or_tools_min_cost_flow(vehicle_action_pairs)
-    occupied_vehicles = len(
-        list(filter(lambda x: x.vehicle.is_occupied(), vehicle_action_pairs))
-    )
+    vehicles = Vehicles.get_vehicles()
+    occupied_vehicles = len(list(filter(lambda x: x.is_occupied(), vehicles)))
     relocated_vehicles = len(
         list(
             filter(
-                lambda x: x.vehicle.is_occupied() and x.vehicle.job.is_relocation,
-                vehicle_action_pairs,
+                lambda x: x.is_occupied() and x.job.is_relocation,
+                vehicles,
             )
         )
     )
-    idling_vehicles = (
-        len(list(filter(lambda x: x.action.is_idling(), vehicle_action_pairs)))
-        - occupied_vehicles
+    idling_vehicles = len(
+        list(filter(lambda x: x.action.is_idling(), vehicle_action_pairs))
     )
-    matched_vehicles = len(vehicle_action_pairs) - idling_vehicles - occupied_vehicles
+    matched_vehicles = len(vehicle_action_pairs) - idling_vehicles
     occupied_vehicles = occupied_vehicles - relocated_vehicles
     LOGGER.debug(
         f"Matched vehicles: {matched_vehicles}, Occupied vehicles: {occupied_vehicles}, Relocated vehicles: {relocated_vehicles}, Idling vehicles: {idling_vehicles}"
@@ -217,7 +218,7 @@ def solve_optimization_problem(
         if pair.action.is_idling():
             continue
         current_time = State.get_state().current_time
-        driver_zone = Grid.get_instance().find_zone(pair.driver.current_position)
+        vehicle_zone = Grid.get_instance().find_zone(pair.vehicle.current_position)
         passenger_pu_zone = pair.action.route.order.zone
         passenger_do_zone = Grid.get_instance().find_zone(
             pair.get_vehicle_destination()
@@ -229,7 +230,7 @@ def solve_optimization_problem(
         total_vehicle_distance = pair.get_total_vehicle_distance()
         DataCollector.append_trip(
             current_time,
-            driver_zone,
+            vehicle_zone,
             passenger_pu_zone,
             passenger_do_zone,
             destination_zone,

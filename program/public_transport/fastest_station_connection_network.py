@@ -18,7 +18,7 @@ class FastestStationConnectionNetwork:
             with open("data/continuous_subway_data.csv", mode="r") as file:
                 reader = csv.DictReader(file)
                 for row in reader:
-                    line_id = int(row["line"])
+                    line_id = row["line"]
                     station_name = row["station_name"]
                     lat = float(row["LAT"])
                     long = float(row["LONG"])
@@ -30,7 +30,7 @@ class FastestStationConnectionNetwork:
                         line_id_to_station_id[line_id] = []
                     line_id_to_station_id[line_id].append(station_id)
             
-            from public_transport.line import Line
+            from program.public_transport.line import Line
             lines = []
             for line_id in line_id_to_station_id:
                 lines.append(Line(list(map(lambda station_id: id_to_station_dict[station_id], line_id_to_station_id[line_id])), line_id))
@@ -54,7 +54,7 @@ class FastestStationConnectionNetwork:
 
     def __init__(self, fastest_connections: list[tuple[Station, Station, list[Station], float]], stations: list[Station], lines) -> None:
 
-        from public_transport.line import Line
+        from program.public_transport.line import Line
         self.lines: list[Line] = lines
         self.stations = stations
 

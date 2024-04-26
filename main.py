@@ -1,7 +1,13 @@
+from datetime import timedelta
 from params.program_params import Mode, ProgramParams
 from playground.graph_sage_test import test_graph_sage
+from program.execution import execute_graph_reinforcement_learning
 from program.grid.grid import Grid
+from program.order.orders import Orders
+from program.state.state import State
+from program.vehicle.vehicles import Vehicles
 from static_data_generation.public_transport_graph_creation import generate_shortest_paths_graph
+from static_data_generation.vehicle_data_initialization import initialize_vehicle_positions
 from static_data_generation.zone_graph_creation import create_zone_graph, fix_zone_graph
 from visualization.visualize_graph import visualize_zone_graph
 
@@ -19,35 +25,35 @@ while True:
         "Which menu you want to enter? (Graph Reinforcement Learning -> 1, Baseline Performance -> 2, Static Data Generation -> 3, Visualization -> 4, Data Analysis -> 5) "
     )
     if user_input == "1":
-        # ProgramParams.EXECUTION_MODE = Mode.GRAPH_REINFORCEMENT_LEARNING
-        # while True:
-        #     user_input = input(
-        #         "Which script do you want to start? (Online Training and Testing -> 1, Start Q-Learning (one day)-> 2) "
-        #     )
-        #     if user_input == "1":
-        #         StateValueTable.get_state_value_table().raze_state_value_table()
-        #         initialize_driver_positions()
-        #         # Train the algorithm On-Policy
-        #         for i in range(14):
-        #             start_q_learning()
-        #             Order.reset()
-        #             State.reset()
-        #             ProgramParams.SIMULATION_DATE += timedelta(1)
-        #         # Testing
-        #         Drivers.raze_drivers()
-        #         initialize_driver_positions()
-        #         # Test the algorithm On-Policy
-        #         for i in range(7):
-        #             start_q_learning()
-        #             Order.reset()
-        #             State.reset()
-        #             ProgramParams.SIMULATION_DATE += timedelta(1)
-        #         break
-        #     if user_input == "2":
-        #         start_q_learning()
-        #         break
-        #     else:
-        #         print("This option is not allowed. Please try again.")
+        ProgramParams.EXECUTION_MODE = Mode.GRAPH_REINFORCEMENT_LEARNING
+        while True:
+            user_input = input(
+                "Which script do you want to start? (Online Training and Testing -> 1, Start Graph Reinforcement Learning (one day) -> 2) "
+            )
+            if user_input == "1":
+                initialize_vehicle_positions()
+                # Train the algorithm On-Policy
+                for i in range(14):
+                    execute_graph_reinforcement_learning()
+                    Orders.reset()
+                    State.reset()
+                    ProgramParams.SIMULATION_DATE += timedelta(1)
+                # Testing
+                Vehicles.raze_vehilces()
+                initialize_vehicle_positions()
+                # Test the algorithm On-Policy
+                for i in range(7):
+                    execute_graph_reinforcement_learning()
+                    Orders.reset()
+                    State.reset()
+                    ProgramParams.SIMULATION_DATE += timedelta(1)
+                break
+            if user_input == "2":
+                initialize_vehicle_positions()
+                execute_graph_reinforcement_learning()
+                break
+            else:
+                print("This option is not allowed. Please try again.")
         break
 
     elif user_input == "2":
