@@ -9,6 +9,7 @@ from program.vehicle.vehicles import Vehicles
 from static_data_generation.public_transport_graph_creation import generate_shortest_paths_graph
 from static_data_generation.vehicle_data_initialization import initialize_vehicle_positions
 from static_data_generation.zone_graph_creation import create_zone_graph, fix_zone_graph
+from visualization.visualize_vehicle_positions import visualize_vehicle_positions
 from visualization.visualize_graph import visualize_zone_graph
 
 
@@ -104,46 +105,18 @@ while True:
         break
 
     elif user_input == "4":
-        # while True:
-        #     user_input = input(
-        #         "Which script do you want to start? (Grid Cell Creation -> 1, Generate Trajectories -> 2, Remove Idle Trajectories -> 3, Initialize Drivers -> 4, Discretize days -> 5) "
-        #     )
-        #     if user_input == "1":
-        #         create_cell_grid()
-        #         break
-        #     elif user_input == "2":
-        #         initialize_driver_positions_for_trajectories()
-        #         generate_trajectories()
-        #         break
-        #     elif user_input == "3":
-        #         remove_idle_trajectories()
-        #         break
-        #     elif user_input == "4":
-        #         initialize_driver_positions()
-        #         break
-        #     elif user_input == "5":
-        #         TimeSeriesDiscretization.discretize_day()
-        #         break
-        #     else:
-        #         print("This option is not allowed. Please try again.")
-        break
-
-    elif user_input == "5":
-        # while True:
-        #     user_input = input(
-        #         "Which script do you want to start? (Visualize driver positions -> 1, Visualize order positions -> 2, Visualize trip data -> 3) "
-        #     )
-        #     if user_input == "1":
-        #         visualize_drivers(f"drivers_{ProgramParams.SIMULATION_DATE.strftime('%Y-%m-%d')}.png")
-        #         break
-        #     elif user_input == "2":
-        #         visualize_orders(f"orders_{ProgramParams.SIMULATION_DATE.strftime('%Y-%m-%d')}.png")
-        #         break
-        #     elif user_input == "3":
-        #         visualize_trip_data()
-        #         break
-        #     else:
-        #         print("This option is not allowed. Please try again.")
+        while True:
+            user_input = input(
+                "Which script do you want to start? (Visualize Zone Graph -> 1, Visualize vehicle positions -> 2) "
+            )
+            if user_input == "1":
+                visualize_zone_graph()
+                break
+            elif user_input == "2":
+                visualize_vehicle_positions()
+                break
+            else:
+                print("This option is not allowed. Please try again.")
         break
 
     # elif user_input == "6":
