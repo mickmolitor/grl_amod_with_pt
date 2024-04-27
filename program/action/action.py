@@ -10,10 +10,10 @@ class Action:
         self.route = route
 
     def is_idling(self) -> bool:
-        return self.route == None
+        return self.route is None
 
     def is_route(self) -> bool:
-        return self.route != None
+        return not self.route is None
 
     def __str__(self):
         return f"{f'Route {self.route.id}' if self.is_route() else 'Idling'}"
