@@ -154,11 +154,11 @@ class StateValueNetworks:
         # Target networks
         torch.save(
             self.target_net.get_GNN_state_dict(),
-            "training_data/main_net_GNN_state_dict.pth",
+            "training_data/target_net_GNN_state_dict.pth",
         )
         torch.save(
             self.target_net.get_DNN_state_dict(),
-            "training_data/main_net_DNN_state_dict.pth",
+            "training_data/target_net_DNN_state_dict.pth",
         )
 
     def export_offline_policy_weights(self, previous_total_minutes: int) -> None:
