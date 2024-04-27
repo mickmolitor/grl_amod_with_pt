@@ -33,5 +33,5 @@ class Vehicles:
                     ]
                 )
     
-    def raze_vehilces():
+    def raze_vehicles():
         Vehicles._vehicles = None
