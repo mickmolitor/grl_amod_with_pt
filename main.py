@@ -1,4 +1,6 @@
+import csv
 from datetime import timedelta
+import os
 from params.program_params import Mode, ProgramParams
 from playground.graph_sage_test import test_graph_sage
 from program.execution import execute_graph_reinforcement_learning
@@ -12,14 +14,39 @@ from static_data_generation.zone_graph_creation import create_zone_graph, fix_zo
 from visualization.visualize_vehicle_positions import visualize_vehicle_positions
 from visualization.visualize_graph import visualize_zone_graph
 
+def grl_train_and_test():
+    initialize_vehicle_positions()
+    # Train the algorithm On-Policy
+    for i in range(14):
+        execute_graph_reinforcement_learning()
+        Orders.reset()
+        State.reset()
+        ProgramParams.SIMULATION_DATE += timedelta(1)
+    # Testing
+    Vehicles.raze_vehicles()
+    initialize_vehicle_positions()
+    # Test the algorithm On-Policy
+    for i in range(7):
+        execute_graph_reinforcement_learning()
+        Orders.reset()
+        State.reset()
+        ProgramParams.SIMULATION_DATE += timedelta(1)
 
-# Orders einlesen
-# State aktualisieren
-# Grid Embedding
-# Routen und Pairs berechnen
-# State updaten
-# relocations
-# state value updaten
+# Read program params
+if os.path.isfile("execution/program_params.csv"):
+    with open("execution/program_params.csv", mode="r") as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            ProgramParams.set_member(row["parameter"], row["value"])
+# Read execution file
+if os.path.isfile("execution/run.csv"):
+    with open("execution/run.csv", mode="r") as file:
+        reader = csv.DictReader(file)
+        if reader.__next__()["Command"] == "grl":
+            ProgramParams.EXECUTION_MODE = Mode.GRAPH_REINFORCEMENT_LEARNING
+            if reader.__next__()["Command"] == "train_and_test":
+                grl_train_and_test()
+
 
 while True:
     user_input = input(
@@ -32,22 +59,7 @@ while True:
                 "Which script do you want to start? (Online Training and Testing -> 1, Start Graph Reinforcement Learning (one day) -> 2) "
             )
             if user_input == "1":
-                initialize_vehicle_positions()
-                # Train the algorithm On-Policy
-                for i in range(14):
-                    execute_graph_reinforcement_learning()
-                    Orders.reset()
-                    State.reset()
-                    ProgramParams.SIMULATION_DATE += timedelta(1)
-                # Testing
-                Vehicles.raze_vehicles()
-                initialize_vehicle_positions()
-                # Test the algorithm On-Policy
-                for i in range(7):
-                    execute_graph_reinforcement_learning()
-                    Orders.reset()
-                    State.reset()
-                    ProgramParams.SIMULATION_DATE += timedelta(1)
+                grl_train_and_test()
                 break
             if user_input == "2":
                 initialize_vehicle_positions()

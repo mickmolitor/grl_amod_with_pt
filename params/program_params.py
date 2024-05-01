@@ -24,11 +24,11 @@ class ProgramParams:
 
     ######################################################################################################
     ############### Hyperparameters ###############
-
+    DISCOUNT_RATE = 0.95
+    LS = 60
     def DISCOUNT_FACTOR(duration_in_seconds: int) -> float:
-        DISCOUNT_RATE = 0.95
-        LS = 60
-        return DISCOUNT_RATE ** (duration_in_seconds / LS)
+
+        return ProgramParams.DISCOUNT_RATE ** (duration_in_seconds / ProgramParams.LS)
 
     LEARNING_RATE = 0.01
 
@@ -123,3 +123,23 @@ class ProgramParams:
 
     # Duration how long orders can be matched with vehicles in seconds
     ORDER_EXPIRY_DURATION = 120
+
+    def set_member(member: str, value):
+        if member == "DISCOUNT_RATE":
+            ProgramParams.DISCOUNT_RATE = float(value)
+        elif member == "LS":
+            ProgramParams.LS = float(value)
+        elif member == "LEARNING_RATE":
+            ProgramParams.LEARNING_RATE = float(value)
+        elif member == "IDLING_COST":
+            ProgramParams.IDLING_COST = float(value)
+        elif member == "AMOUNT_OF_VEHICLES":
+            ProgramParams.AMOUNT_OF_VEHICLES = int(value)
+        elif member == "RELOCATION_RADIUS":
+            ProgramParams.RELOCATION_RADIUS = float(value)
+        elif member == "DIRECT_TRIP_DISCOUNT_FACTOR":
+            ProgramParams.DIRECT_TRIP_DISCOUNT_FACTOR = float(value)
+        elif member == "MAIN_AND_TARGET_NET_SYNC_ITERATIONS":
+            ProgramParams.MAIN_AND_TARGET_NET_SYNC_ITERATIONS = int(value)
+        else:
+            raise Exception(f"No parameter found with name {member}")

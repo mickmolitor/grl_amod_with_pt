@@ -166,3 +166,5 @@ cython_debug/
 /figures
 /data_output
 /training_data
+
+/execution
