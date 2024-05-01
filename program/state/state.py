@@ -208,7 +208,7 @@ class State:
                     # We don't want negative or 0 values
                     state_value = cells_to_weight[cell] + abs(min_state_value) + 1
                     cells_to_weight[cell] = (
-                        ProgramParams.DISCOUNT_FACTOR_RELOCATION(driving_time)
+                        ProgramParams.DISCOUNT_FACTOR(driving_time)
                         * state_value
                     )
 

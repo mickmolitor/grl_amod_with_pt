@@ -26,16 +26,11 @@ class ProgramParams:
     ############### Hyperparameters ###############
 
     def DISCOUNT_FACTOR(duration_in_seconds: int) -> float:
-        DISCOUNT_RATE = 0.9  # See Tang et al. (2021)
-        LS = 60
-        return DISCOUNT_RATE ** (duration_in_seconds / LS)
-    
-    def DISCOUNT_FACTOR_RELOCATION(duration_in_seconds: int) -> float:
-        DISCOUNT_RATE = 0.9  # See Tang et al. (2021)
+        DISCOUNT_RATE = 0.95
         LS = 60
         return DISCOUNT_RATE ** (duration_in_seconds / LS)
 
-    LEARNING_RATE = 0.025  # See Tang et al. (2021)
+    LEARNING_RATE = 0.01
 
 
     ######################################################################################################
