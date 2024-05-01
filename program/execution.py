@@ -108,6 +108,8 @@ def execute_graph_reinforcement_learning():
 
     LOGGER.info("Exporting final vehicle positions")
     Vehicles.export_vehicles()
+    LOGGER.info("Exporting average time reductions")
+    State.get_state().export_average_time_reductions()
     LOGGER.info("Exporting data")
     DataCollector.export_all_data()
     LOGGER.info("Exporting training results")

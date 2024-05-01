@@ -1,9 +1,11 @@
 from __future__ import annotations
+import csv
 import random
 from program.action.action import Action
 from program.action.vehicle_action_pair import VehicleActionPair
 from program.data_collector import DataCollector
 from program.grid.grid import Grid
+from program.interval.average_time_reduction import AverageTimeReduction
 from program.interval.grid_interval import GridInterval
 from program.order.orders import Orders
 from program.vehicle.vehicles import Vehicles
@@ -42,6 +44,7 @@ class State:
         self.amount_of_orders_per_zone: dict[Zone, dict[str, float]] = {zone: {"last_interval": 0, "now": 0} for zone in Zones.get_zones()}
         # {"idle": num, "occupied": num}
         self.amount_of_vehicles_per_zone: dict[Zone, dict[str, float]] = {zone: {"idle": 0, "occupied": 0} for zone in Zones.get_zones()}
+        self.average_time_reduction_per_interval_per_zone: dict[GridInterval, dict[Zone, AverageTimeReduction]] = {}
 
         self.action_reward_tuples: list[tuple[Zone, VehicleActionPair, float]] = []
 
@@ -98,7 +101,9 @@ class State:
                 # Remove order from open orders set
                 del self.orders_dict[route.order.id]
 
+        self.update_average_time_reductions()
         self.apply_state_changes_to_value_function()
+        self.action_reward_tuples = []
 
         amount_of_unserved_orders = len(self.orders_dict)
         DataCollector.append_orders_data(
@@ -124,11 +129,16 @@ class State:
         for vehicle in Vehicles.get_vehicles():
             vehicle.update_job_status(ProgramParams.SIMULATION_UPDATE_RATE)
 
+    def update_average_time_reductions(self) -> None:
+        for tup in self.action_reward_tuples:
+            interval = self.current_interval
+            zone = tup[0]
+            time_reduction = tup[1].action.route.time_reduction if tup[1].action.is_route() else (-1)*ProgramParams.IDLING_COST
+            self.average_time_reduction_per_interval_per_zone[interval][zone].update(time_reduction)
+
     def apply_state_changes_to_value_function(self) -> None:
         if ProgramParams.EXECUTION_MODE == Mode.GRAPH_REINFORCEMENT_LEARNING:
             StateValueNetworks.get_instance().adjust_state_values(self.action_reward_tuples)
-
-        self.action_reward_tuples = []
 
     def update_order_expiry_duration(self) -> None:
         duration = ProgramParams.SIMULATION_UPDATE_RATE
@@ -280,3 +290,26 @@ class State:
         if difference_since_last_interval == 0:
             return 0
         return self.amount_of_vehicles_per_zone[zone]["occupied"] / difference_since_last_interval
+    
+    def initialize_average_time_reductions(self) -> None:
+        day_string = "wd" if ProgramParams.SIMULATION_DATE.weekday() < 5 else ("sat" if ProgramParams.SIMULATION_DATE.weekday() == 5 else "sun")
+        with open(f"data/average_time_reduction_{day_string}.csv", mode="r") as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                grid_interval = TimeSeries.get_instance().interval_by_id[int(row["interval_id"])]
+                zone = Grid.get_instance().zones_dict[int(row["zone_id"])]
+                average_time_reduction = float(row["average_time_reduction"])
+                amount_orders = int(row["amount_orders"])
+                if self.average_time_reduction_per_interval_per_zone[grid_interval] is None:
+                    self.average_time_reduction_per_interval_per_zone[grid_interval] = {}
+                self.average_time_reduction_per_interval_per_zone[grid_interval][zone] = AverageTimeReduction(grid_interval, zone, average_time_reduction, amount_orders)
+    
+    def export_average_time_reductions(self) -> None:
+        day_string = "wd" if ProgramParams.SIMULATION_DATE.weekday() < 5 else ("sat" if ProgramParams.SIMULATION_DATE.weekday() == 5 else "sun")
+        with open(f"data/average_time_reduction_{day_string}.csv", mode="w") as file:
+            writer = csv.writer(file)
+            writer.writerow(["interval_id", "zone_id", "average_time_reduction", "amount_orders"])
+            for grid_inteval in self.average_time_reduction_per_interval_per_zone:
+                for zone in self.average_time_reduction_per_interval_per_zone[grid_inteval]:
+                    rec = self.average_time_reduction_per_interval_per_zone[grid_inteval][zone]
+                    writer.writerow([rec.grid_interval.id, rec.zone.id, rec.average_time_reduction, rec.amount_orders])
