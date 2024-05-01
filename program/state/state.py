@@ -1,5 +1,6 @@
 from __future__ import annotations
 import csv
+import os
 import random
 from program.action.action import Action
 from program.action.vehicle_action_pair import VehicleActionPair
@@ -45,6 +46,7 @@ class State:
         # {"idle": num, "occupied": num}
         self.amount_of_vehicles_per_zone: dict[Zone, dict[str, float]] = {zone: {"idle": 0, "occupied": 0} for zone in Zones.get_zones()}
         self.average_time_reduction_per_interval_per_zone: dict[GridInterval, dict[Zone, AverageTimeReduction]] = {}
+        self.initialize_average_time_reductions()
 
         self.action_reward_tuples: list[tuple[Zone, VehicleActionPair, float]] = []
 
@@ -157,9 +159,7 @@ class State:
 
     def increment_time_interval(self, current_time: Time) -> None:
         if self.current_interval.end.is_before(current_time):
-            self.current_interval = TimeSeries.get_instance().intervals[
-                self.current_interval.index + 1
-            ]
+            self.current_interval = TimeSeries.get_instance().get_next_interval(self.current_interval)
             for zone in Zones.get_zones():
                 self.amount_of_orders_per_zone[zone]["last_interval"] = self.amount_of_orders_per_zone[zone]["now"]
                 self.amount_of_orders_per_zone[zone]["now"] = 0
@@ -293,6 +293,17 @@ class State:
     
     def initialize_average_time_reductions(self) -> None:
         day_string = "wd" if ProgramParams.SIMULATION_DATE.weekday() < 5 else ("sat" if ProgramParams.SIMULATION_DATE.weekday() == 5 else "sun")
+
+        # Initialize dict
+        for interval in TimeSeries.get_instance().intervals:
+            self.average_time_reduction_per_interval_per_zone[interval] = {}
+            for zone in Zones.get_zones():
+                self.average_time_reduction_per_interval_per_zone[interval][zone] = AverageTimeReduction(interval, zone, 0, 0)
+
+        if not os.path.isfile(f"data/average_time_reduction_{day_string}.csv"):
+            return
+
+        # Fill dict with existing data
         with open(f"data/average_time_reduction_{day_string}.csv", mode="r") as file:
             reader = csv.DictReader(file)
             for row in reader:
@@ -300,9 +311,9 @@ class State:
                 zone = Grid.get_instance().zones_dict[int(row["zone_id"])]
                 average_time_reduction = float(row["average_time_reduction"])
                 amount_orders = int(row["amount_orders"])
-                if self.average_time_reduction_per_interval_per_zone[grid_interval] is None:
-                    self.average_time_reduction_per_interval_per_zone[grid_interval] = {}
-                self.average_time_reduction_per_interval_per_zone[grid_interval][zone] = AverageTimeReduction(grid_interval, zone, average_time_reduction, amount_orders)
+
+                self.average_time_reduction_per_interval_per_zone[grid_interval][zone].average_time_reduction = average_time_reduction
+                self.average_time_reduction_per_interval_per_zone[grid_interval][zone].amount_orders = amount_orders
     
     def export_average_time_reductions(self) -> None:
         day_string = "wd" if ProgramParams.SIMULATION_DATE.weekday() < 5 else ("sat" if ProgramParams.SIMULATION_DATE.weekday() == 5 else "sun")

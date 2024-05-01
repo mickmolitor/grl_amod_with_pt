@@ -10,6 +10,8 @@ from program.state.state import State
 import numpy as np
 from ortools.graph.python import min_cost_flow
 
+from program.vehicle.vehicles import Vehicles
+
 # Solve the bipartite matching problem as a min-cost-flow problem to use the efficient C++ solver
 def or_tools_min_cost_flow(vehicle_action_pairs: list[VehicleActionPair]) -> list[tuple[Vehicle, Action]]:
 
@@ -155,7 +157,7 @@ def or_tools_min_cost_flow(vehicle_action_pairs: list[VehicleActionPair]) -> lis
 
     hours = (State.get_state().current_time.to_total_minutes() - TimeSeries.get_instance().start_time.to_total_minutes()) / 60
     hours = hours if hours > 0.1 else 0.1
-    LOGGER.debug(f"Sum of timesafe per car, per hour, in minutes: {ProgramStats.SUM_OF_TIMESAFE / len(vehicle_list) / hours / 60}")
+    LOGGER.debug(f"Sum of timesafe per car, per hour, in minutes: {ProgramStats.SUM_OF_TIMESAFE / len(Vehicles.get_vehicles()) / hours / 60}")
     return matches
 
 from scipy.sparse import csr_matrix

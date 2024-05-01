@@ -58,7 +58,7 @@ class StateValueNetworks:
             last_orders = state.get_last_order_quota(zone)
             idle = state.get_idle_vehicle_quota(zone)
             occupied = state.get_occupied_vehicle_quota(zone)
-            average_reduction = state.average_time_reduction_per_interval_per_zone[state.current_interval][zone]
+            average_reduction = state.average_time_reduction_per_interval_per_zone[state.current_interval][zone].average_time_reduction
             zone_to_features[zone] = ZoneGraph.Feature(
                 current_orders, last_orders, occupied, idle, average_reduction
             )
