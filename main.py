@@ -40,7 +40,7 @@ while True:
                     State.reset()
                     ProgramParams.SIMULATION_DATE += timedelta(1)
                 # Testing
-                Vehicles.raze_vehilces()
+                Vehicles.raze_vehicles()
                 initialize_vehicle_positions()
                 # Test the algorithm On-Policy
                 for i in range(7):

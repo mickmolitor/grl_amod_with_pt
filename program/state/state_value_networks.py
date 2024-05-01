@@ -77,35 +77,37 @@ class StateValueNetworks:
     ) -> None:
         from program.state.state import State
         
-        # Calculate main values
-        for tup in action_reward_tuples:
-            self.main_net.get_state_value(tup[1].action, tup[0], State.get_state().current_time)
+        # Only update network weights if there are vehicle action matches
+        if len(action_reward_tuples) > 0:
+            # Calculate main values
+            for tup in action_reward_tuples:
+                self.main_net.get_state_value(tup[1].action, tup[0], State.get_state().current_time)
 
-        td_values = []
-        for tup in action_reward_tuples:
-            td_values.append(
-                {
-                    "reward": tup[2],
-                    "main_value": self.main_net.get_state_value_by_action_id(
-                        tup[1].action.id
-                    ),
-                    "target_value": self.target_net.get_state_value_by_action_id(
-                        tup[1].action.id
-                    ),
-                    "discount_value": ProgramParams.DISCOUNT_FACTOR(
-                        tup[1].get_total_vehicle_travel_time_in_seconds()
-                    ),
-                }
-            )
+            td_values = []
+            for tup in action_reward_tuples:
+                td_values.append(
+                    {
+                        "reward": tup[2],
+                        "main_value": self.main_net.get_state_value_by_action_id(
+                            tup[1].action.id
+                        ),
+                        "target_value": self.target_net.get_state_value_by_action_id(
+                            tup[1].action.id
+                        ),
+                        "discount_value": ProgramParams.DISCOUNT_FACTOR(
+                            tup[1].get_total_vehicle_travel_time_in_seconds()
+                        ),
+                    }
+                )
 
-        LOGGER.debug("Backward propagation and optimization")
-        # Backward and optimize
-        self.main_net.optimizer_zero_grad()
-        # Compute loss
-        loss = self.loss_fn(td_values)
-        LOGGER.debug(f"Temporal difference error: {float(loss)}")
-        loss.backward()
-        self.main_net.optimizer_step()
+            LOGGER.debug("Backward propagation and optimization")
+            # Backward and optimize
+            self.main_net.optimizer_zero_grad()
+            # Compute loss
+            loss = self.loss_fn(td_values)
+            LOGGER.debug(f"Temporal difference error: {float(loss)}")
+            loss.backward()
+            self.main_net.optimizer_step()
 
         self.iteration += 1
 
@@ -152,11 +154,11 @@ class StateValueNetworks:
         # Target networks
         torch.save(
             self.target_net.get_GNN_state_dict(),
-            "training_data/main_net_GNN_state_dict.pth",
+            "training_data/target_net_GNN_state_dict.pth",
         )
         torch.save(
             self.target_net.get_DNN_state_dict(),
-            "training_data/main_net_DNN_state_dict.pth",
+            "training_data/target_net_DNN_state_dict.pth",
         )
 
     def export_offline_policy_weights(self, previous_total_minutes: int) -> None:

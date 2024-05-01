@@ -95,7 +95,7 @@ class ProgramParams:
     ############### FIX ###############
     # File paths to orders
     def ORDERS_FILE_PATH() :
-        return f"data/{ProgramParams.DATA_SET.value}/orders_{ProgramParams.SIMULATION_DATE.strftime('%Y-%m-%d')}_reduced.csv"
+        return f"data/{ProgramParams.DATA_SET.value}/orders_{ProgramParams.SIMULATION_DATE.strftime('%Y-%m-%d')}.csv"
     
     # Time it takes until the simulation updates in seconds
     SIMULATION_UPDATE_RATE = 60 #FIX

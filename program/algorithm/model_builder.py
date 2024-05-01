@@ -12,6 +12,11 @@ from ortools.graph.python import min_cost_flow
 
 # Solve the bipartite matching problem as a min-cost-flow problem to use the efficient C++ solver
 def or_tools_min_cost_flow(vehicle_action_pairs: list[VehicleActionPair]) -> list[tuple[Vehicle, Action]]:
+
+    if len(vehicle_action_pairs) == 0:
+        LOGGER.debug("No available vehicles. Skip matching phase")
+        return []
+
     start_time = time.time()
     smcf = min_cost_flow.SimpleMinCostFlow()
     edge_sum = 0
