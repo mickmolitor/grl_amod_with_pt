@@ -300,11 +300,11 @@ class State:
             for zone in Zones.get_zones():
                 self.average_time_reduction_per_interval_per_zone[interval][zone] = AverageTimeReduction(interval, zone, 0, 0)
 
-        if not os.path.isfile(f"data/average_time_reduction_{day_string}.csv"):
+        if not os.path.isfile(f"input_data/average_time_reduction_{day_string}.csv"):
             return
 
         # Fill dict with existing data
-        with open(f"data/average_time_reduction_{day_string}.csv", mode="r") as file:
+        with open(f"input_data/average_time_reduction_{day_string}.csv", mode="r") as file:
             reader = csv.DictReader(file)
             for row in reader:
                 grid_interval = TimeSeries.get_instance().interval_by_id[int(row["interval_id"])]
@@ -317,7 +317,7 @@ class State:
     
     def export_average_time_reductions(self) -> None:
         day_string = "wd" if ProgramParams.SIMULATION_DATE.weekday() < 5 else ("sat" if ProgramParams.SIMULATION_DATE.weekday() == 5 else "sun")
-        with open(f"data/average_time_reduction_{day_string}.csv", mode="w") as file:
+        with open(f"input_data/average_time_reduction_{day_string}.csv", mode="w") as file:
             writer = csv.writer(file)
             writer.writerow(["interval_id", "zone_id", "average_time_reduction", "amount_orders"])
             for grid_inteval in self.average_time_reduction_per_interval_per_zone:

@@ -30,8 +30,7 @@ def initialize_vehicle_positions() -> None:
         vehicles.append(Vehicle(vehicle_cell.center))
         counter += 1
     
-    csv_file_path = "data/vehicles.csv"
-    with open(csv_file_path, mode="w") as file:
+    with open("input_data/vehicles.csv", mode="w") as file:
         writer = csv.writer(file)
         writer.writerow(["vehicle_id", "lat", "lon"])
         for vehicle in vehicles:

@@ -160,21 +160,13 @@ class StateValueNetworks:
             "training_data/target_net_DNN_state_dict.pth",
         )
 
-    def export_offline_policy_weights(self, previous_total_minutes: int) -> None:
-        daystr = ""
-        wd = ProgramParams.SIMULATION_DATE.weekday()
-        if wd < 5:
-            daystr = "wd"
-        elif wd == 5:
-            daystr = "sat"
-        else:
-            daystr = "sun"
-        # Export current trained values first
-        torch.save(
-            self.main_net.state_dict(),
-            f"code/training_data/ope_{daystr}_{previous_total_minutes}.pth",
-        )
-        torch.save(
-            self.target_net.state_dict(),
-            f"code/training_data/ope_target_{daystr}_{previous_total_minutes}.pth",
-        )
+    def raze_weights() -> None:
+        # Delete files with weights
+        if os.path.exists("training_data/main_net_DNN_state_dict.pth"):
+            os.remove("training_data/main_net_DNN_state_dict.pth")
+        if os.path.exists("training_data/main_net_GNN_state_dict.pth"):
+            os.remove("training_data/main_net_GNN_state_dict.pth")
+        if os.path.exists("training_data/target_net_DNN_state_dict.pth"):
+            os.remove("training_data/target_net_DNN_state_dict.pth")
+        if os.path.exists("training_data/target_net_GNN_state_dict.pth"):
+            os.remove("training_data/target_net_GNN_state_dict.pth")

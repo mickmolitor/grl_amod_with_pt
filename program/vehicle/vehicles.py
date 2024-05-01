@@ -11,7 +11,7 @@ class Vehicles:
     def get_vehicles() -> list[Vehicle]:
         if Vehicles._vehicles == None:
             Vehicles._vehicles = []
-            with open("data/vehicles.csv", mode="r") as file:
+            with open("input_data/vehicles.csv", mode="r") as file:
                 reader = csv.DictReader(file)
                 for row in reader:
                     location = Location(float(row["lat"]), float(row["lon"]))
@@ -21,7 +21,7 @@ class Vehicles:
 
     def export_vehicles() -> None:
         vehicles = Vehicles.get_vehicles()
-        with open("data/vehicles.csv", mode="w") as file:
+        with open("input_data/vehicles.csv", mode="w") as file:
             writer = csv.writer(file)
             writer.writerow(["vehicle_id", "lat", "lon"])
             for vehicle in vehicles:

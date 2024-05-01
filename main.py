@@ -7,6 +7,7 @@ from program.execution import execute_graph_reinforcement_learning
 from program.grid.grid import Grid
 from program.order.orders import Orders
 from program.state.state import State
+from program.state.state_value_networks import StateValueNetworks
 from program.vehicle.vehicles import Vehicles
 from static_data_generation.public_transport_graph_creation import generate_shortest_paths_graph
 from static_data_generation.vehicle_data_initialization import initialize_vehicle_positions
@@ -15,6 +16,7 @@ from visualization.visualize_vehicle_positions import visualize_vehicle_position
 from visualization.visualize_graph import visualize_zone_graph
 
 def grl_train_and_test():
+    StateValueNetworks.raze_weights()
     initialize_vehicle_positions()
     # Train the algorithm On-Policy
     for i in range(14):
@@ -46,6 +48,7 @@ if os.path.isfile("execution/run.csv"):
             ProgramParams.EXECUTION_MODE = Mode.GRAPH_REINFORCEMENT_LEARNING
             if reader.__next__()["Command"] == "train_and_test":
                 grl_train_and_test()
+                exit()
 
 
 while True:
