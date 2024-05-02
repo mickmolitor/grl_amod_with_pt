@@ -1,4 +1,5 @@
 import csv
+import os
 import random
 from program.grid.grid import Grid
 from program.interval.time import Time
@@ -29,7 +30,8 @@ def initialize_vehicle_positions() -> None:
         vehicle_cell = random.Random(counter).choice(cells)
         vehicles.append(Vehicle(vehicle_cell.center))
         counter += 1
-    
+    if not os.path.exists("input_data"):
+        os.makedirs("input_data")
     with open("input_data/vehicles.csv", mode="w") as file:
         writer = csv.writer(file)
         writer.writerow(["vehicle_id", "lat", "lon"])
