@@ -86,19 +86,19 @@ def execute_graph_reinforcement_learning():
         if ProgramParams.FEATURE_RELOCATION_ENABLED and current_time.to_total_seconds() % ProgramParams.MAX_IDLING_TIME == 0:
             LOGGER.debug("Relocate long time idle vehicles")
             State.get_state().relocate()
-
-        for vehicle in Vehicles.get_vehicles():
-            status = (
-                "idling"
-                if not vehicle.is_occupied()
-                else ("relocation" if vehicle.job.is_relocation else "occupied")
-            )
-            DataCollector.append_driver_data(
-                current_time, vehicle.id, status, vehicle.current_position
-            )
-            DataCollector.append_zone_id(
-                current_time, Grid.get_instance().find_cell(vehicle.current_position).id
-            )
+        if current_time.to_total_minutes() % 60 == 0:
+            for vehicle in Vehicles.get_vehicles():
+                status = (
+                    "idling"
+                    if not vehicle.is_occupied()
+                    else ("relocation" if vehicle.job.is_relocation else "occupied")
+                )
+                DataCollector.append_driver_data(
+                    current_time, vehicle.id, status, vehicle.current_position
+                )
+                DataCollector.append_zone_id(
+                    current_time, Grid.get_instance().find_cell(vehicle.current_position).id
+                )
 
         # Update the expiry durations of still open orders
         State.get_state().update_order_expiry_duration()
