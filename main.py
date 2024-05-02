@@ -147,7 +147,7 @@ while True:
         while True:
             print("Please remind to adapt to the correct paths.")
             user_input = input(
-                "Which script do you want to start? (\n   Plot average time reduction -> 1\n   Plot average trip distance for direct routes -> 2\n   Plot average trip distance for combination routes -> 3\n   Plot vehicle distribution -> 4\n) "
+                "Which script do you want to start? (\n   Plot average time reduction -> 1\n   Plot average trip distance for direct routes -> 2\n   Plot average trip distance for combination routes -> 3\n   Plot vehicle distribution -> 4\n   Plot combi route ratio -> 5\n   Plot workload -> 6\n) "
             )
             if user_input == "1":
                 plt.average_time_reduction_per_day()
@@ -160,6 +160,12 @@ while True:
                 break
             elif user_input == "4":
                 plt.visualize_vehicles()
+                break
+            elif user_input == "5":
+                plt.visualize_combi_route_ratio()
+                break
+            elif user_input == "6":
+                plt.visualize_workload()
                 break
             else:
                 print("This option is not allowed. Please try again.")

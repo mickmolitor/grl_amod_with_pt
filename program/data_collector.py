@@ -29,8 +29,6 @@ class DataCollector:
     # [(total_seconds, driver_start_zone_id, passenger_pickup_zone_id, passenger_dropoff_zone_id, destination_id, vehicle_trip_time, time_reduction, combi_route, total_vehicle_distance)]
     trip_data = []
 
-    state_value_data = []
-
     def output_path() -> str:
         path = f"data_output/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/data"
         if not os.path.exists(path):
@@ -121,11 +119,6 @@ class DataCollector:
             )
         )
 
-    def append_state_value_data(current_time: Time, zone: Zone, state_value: float):
-        DataCollector.state_value_data.append(
-            (current_time.to_total_seconds(), zone.id, state_value)
-        )
-
     def export_all_data():
         csv_file_path = f"{DataCollector.output_path()}/workload{ProgramParams.SIMULATION_DATE.strftime('%Y-%m-%d')}.csv"
         with open(csv_file_path, mode="w") as file:
@@ -212,13 +205,6 @@ class DataCollector:
             for w in DataCollector.trip_data:
                 writer.writerow([w[0], w[1], w[2], w[3], w[4], w[5], w[6], w[7], w[8]])
 
-        csv_file_path = f"{DataCollector.output_path()}/state_values{ProgramParams.SIMULATION_DATE.strftime('%Y-%m-%d')}.csv"
-        with open(csv_file_path, mode="w") as file:
-            writer = csv.writer(file)
-            writer.writerow(["total_seconds", "zone_id", "state_value"])
-            for w in DataCollector.state_value_data:
-                writer.writerow([w[0], w[1], w[2]])
-
     def clear():
         DataCollector.driver_data.clear()
         DataCollector.orders_data.clear()
@@ -228,4 +214,3 @@ class DataCollector:
         DataCollector.time_reduction_quota.clear()
         DataCollector.orders_dataa.clear()
         DataCollector.zone_id_list.clear()
-        DataCollector.state_value_data.clear()

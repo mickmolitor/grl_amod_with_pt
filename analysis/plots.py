@@ -314,7 +314,6 @@ def average_trip_distances_per_day_for_direct_routes():
     tripdata_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/yes/data"
     total_time_reduction = []
     routes_per_day = []
-    routes_per_day = []
     total_time_reduction = []
     average_route_length = {
         "driver_to_pickup_distance_km": [],
@@ -538,6 +537,86 @@ def average_trip_distances_per_day_for_combination_routes():
         os.makedirs(figure_path)
     plt.savefig(f"{figure_path}/average_trip_distances_per_day_for_combination_routes.png")
 
+
+def visualize_combi_route_ratio():
+    # Set program params
+    ProgramParams.EXECUTION_MODE = Mode.GRAPH_REINFORCEMENT_LEARNING
+    ProgramParams.DISCOUNT_RATE = 0.95
+    ProgramParams.LS = 60
+    ProgramParams.LEARNING_RATE = 0.01
+    ProgramParams.IDLING_COST = 5
+    ProgramParams.AMOUNT_OF_VEHICLES = 100
+    ProgramParams.RELOCATION_RADIUS = 10000
+    ProgramParams.MAIN_AND_TARGET_NET_SYNC_ITERATIONS = 60
+
+    tripdata_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/yes/data"
+    routes_per_day = []
+    direct_routes_per_day = []
+    combi_routes_per_day = []
+
+    tripdata_files = [
+        f
+        for f in os.listdir(tripdata_path)
+        if f.endswith(".csv") and f.startswith("tripdata")
+    ]
+    dates = [re.search(r"(\d{4}-\d{2}-\d{2})", f).group(1) for f in tripdata_files]
+    dates.sort(key=lambda date: datetime.strptime(date, "%Y-%m-%d"))
+    for date in dates:
+        # Tripdata data
+        tripdata_file_name = f"tripdata{date}.csv"
+        tripdata_file_path = os.path.join(tripdata_path, tripdata_file_name)
+        if os.path.exists(tripdata_file_path):
+            tripdata = pd.read_csv(tripdata_file_path)
+            routes_per_day.append(len(tripdata))
+            direct_routes_per_day.append(len(tripdata[tripdata["combi_route"] == False]))
+            combi_routes_per_day.append(len(tripdata[tripdata["combi_route"] == True]))
+        else:
+            routes_per_day.append(float("nan"))
+            direct_routes_per_day.append(float("nan"))
+            combi_routes_per_day.append(float("nan"))
+    
+    fig, ax5 = plt.subplots(1, 1, figsize=(15, 12))
+    ax5.bar(
+        dates,
+        direct_routes_per_day,
+        color="#90EE90",
+        label="Direct routes",
+    )
+
+    moving_average_direct = calculate_moving_average(
+        direct_routes_per_day, window_size=5
+    )
+
+    # Adjust 'dates' to ignore the first value
+    ax5.plot(
+        dates,
+        moving_average_direct,
+        color="red",
+        marker=".",
+        linestyle="-",
+        linewidth=2,
+        label="Moving average",
+    )
+
+    ax5.bar(
+        dates,
+        combi_routes_per_day,
+        color="green",
+        alpha=0.6,
+        label="Combi routes",
+        bottom=direct_routes_per_day,
+    )
+
+    ax5.set_xlabel("Date")
+    ax5.set_ylabel("Amount of accepted orders")
+    ax5.set_title("Ratio between direct and combi routes")
+    ax5.set_xticklabels(dates, rotation=45)
+
+    figure_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/yes/figures"
+    if not os.path.exists(figure_path):
+        os.makedirs(figure_path)
+    plt.savefig(f"{figure_path}/combi_route_ratio.png")
+
 def visualize_vehicles():
     # Set program params
     ProgramParams.EXECUTION_MODE = Mode.GRAPH_REINFORCEMENT_LEARNING
@@ -599,3 +678,73 @@ def visualize_vehicles():
     if not os.path.exists(figure_path):
         os.makedirs(figure_path)
     plt.savefig(f"{figure_path}/vehicle_distribution.png", dpi=600)
+
+
+def visualize_workload():
+    # Set program params
+    ProgramParams.EXECUTION_MODE = Mode.GRAPH_REINFORCEMENT_LEARNING
+    ProgramParams.DISCOUNT_RATE = 0.95
+    ProgramParams.LS = 60
+    ProgramParams.LEARNING_RATE = 0.01
+    ProgramParams.IDLING_COST = 5
+    ProgramParams.AMOUNT_OF_VEHICLES = 100
+    ProgramParams.RELOCATION_RADIUS = 10000
+    ProgramParams.MAIN_AND_TARGET_NET_SYNC_ITERATIONS = 60
+
+    workloaddata_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/yes/data"
+    workload_per_day = []
+
+    workloaddata_files = [
+        f
+        for f in os.listdir(workloaddata_path)
+        if f.endswith(".csv") and f.startswith("workload")
+    ]
+    dates = [re.search(r"(\d{4}-\d{2}-\d{2})", f).group(1) for f in workloaddata_files]
+    dates.sort(key=lambda date: datetime.strptime(date, "%Y-%m-%d"))
+    for date in dates:
+        # Tripdata data
+        workloaddata_file_name = f"workload{date}.csv"
+        workloaddata_file_path = os.path.join(workloaddata_path, workloaddata_file_name)
+        if os.path.exists(workloaddata_file_path):
+            workloaddata = pd.read_csv(workloaddata_file_path)
+            workload_per_day.append(
+                workloaddata["num_of_occupied_driver"].mean() / ProgramParams.AMOUNT_OF_VEHICLES
+            )
+
+        else:
+            workload_per_day.append(float("nan"))
+    
+    fig, ax5 = plt.subplots(1, 1, figsize=(15, 12))
+    ax5.bar(
+        dates,
+        workload_per_day,
+        color="#90EE90",
+        label="Workload",
+    )
+    ax5.set_xlabel("Date")
+    ax5.set_ylabel("Workload percentage")
+    ax5.set_title("Workload of vehicles")
+    ax5.set_xticklabels(dates, rotation=45)
+
+    moving_average = calculate_moving_average(
+        workload_per_day, window_size=5
+    )
+
+    # Adjust 'dates' to ignore the first value
+    ax5.plot(
+        dates,
+        moving_average,
+        color="red",
+        marker=".",
+        linestyle="-",
+        linewidth=2,
+        label="Moving average",
+    )
+
+    plt.ylim(0.85, 1)
+
+
+    figure_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/yes/figures"
+    if not os.path.exists(figure_path):
+        os.makedirs(figure_path)
+    plt.savefig(f"{figure_path}/workload.png")
