@@ -2,6 +2,7 @@ import csv
 from datetime import timedelta
 import os
 from params.program_params import Mode, ProgramParams
+from params.program_stats import ProgramStats
 from playground.graph_sage_test import test_graph_sage
 from program.execution import execute_graph_reinforcement_learning
 from program.grid.grid import Grid
@@ -23,6 +24,7 @@ def grl_train_and_test():
         execute_graph_reinforcement_learning()
         Orders.reset()
         State.reset()
+        ProgramStats.SUM_OF_TIMESAFE = 0
         ProgramParams.SIMULATION_DATE += timedelta(1)
     # Testing
     Vehicles.raze_vehicles()
@@ -32,6 +34,7 @@ def grl_train_and_test():
         execute_graph_reinforcement_learning()
         Orders.reset()
         State.reset()
+        ProgramStats.SUM_OF_TIMESAFE = 0
         ProgramParams.SIMULATION_DATE += timedelta(1)
 
 # Read program params
