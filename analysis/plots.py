@@ -219,14 +219,13 @@ def average_time_reduction_per_day():
     ProgramParams.LS = 60
     ProgramParams.LEARNING_RATE = 0.01
     ProgramParams.IDLING_COST = 5
-    ProgramParams.AMOUNT_OF_VEHICLES = 100
+    ProgramParams.AMOUNT_OF_VEHICLES = 2000
     ProgramParams.RELOCATION_RADIUS = 10000
     ProgramParams.MAIN_AND_TARGET_NET_SYNC_ITERATIONS = 60
 
     orders_path = "data/for_hire"
-    tripdata_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/yes/data"
+    tripdata_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/data"
     total_time_reduction = []
-    average_time_reduction_per_day = []
     total_time_reduction_per_car_in_minutes = []
 
     tripdata_files = [
@@ -247,41 +246,26 @@ def average_time_reduction_per_day():
         else:
             total_time_reduction.append(float("nan"))
 
-    i = 0
-    for date in dates:
-        # Orders data
-        orders_file_name = f"orders_{date}.csv"
-        orders_file_path = os.path.join(orders_path, orders_file_name)
-        if os.path.exists(orders_file_path):
-            orders = pd.read_csv(orders_file_path)
-            num_orders = len(orders)
-            average_time_reduction_per_day.append(
-                total_time_reduction[i] / num_orders if num_orders > 0 else float("nan")
-            )
-        else:
-            average_time_reduction_per_day.append(float("nan"))
-        i += 1
-
     for total_time in total_time_reduction:
         # Divide the total time savings by 100 (for the number of cars) and then by 60 (for minutes)
         if not pd.isna(total_time):
-            time_per_car_in_minutes = (total_time / 1000) / 60 / 24
+            time_per_car_in_minutes = total_time/60/24/ProgramParams.AMOUNT_OF_VEHICLES
         else:
             time_per_car_in_minutes = float("nan")
         total_time_reduction_per_car_in_minutes.append(time_per_car_in_minutes)
 
     fig, ax4 = plt.subplots(1, 1, figsize=(15, 12))
     # Fourth plot: Insert your code for the fourth plot here
-    ax4.bar(dates, average_time_reduction_per_day, color="orange")
+    ax4.bar(dates, total_time_reduction_per_car_in_minutes, color="orange")
     ax4.set_xlabel("Date")
-    ax4.set_ylabel("Average time savings per order per day")
-    ax4.set_title("Average time savings per order per day")
+    ax4.set_ylabel("Time reduction in minutes")
+    ax4.set_title("Average time reduction per vehicle per hour in minutes")
     ax4.set_xticklabels(dates, rotation=45)
     # Display can be adjusted. Just select what is desired from moving_average.
     # moving average: calculate_moving_average
     # linear regression: calculate_linear_regression
     moving_average = calculate_moving_average(
-        average_time_reduction_per_day, window_size=5
+        total_time_reduction_per_car_in_minutes, window_size=5
     )
 
     # Adjust 'dates' to ignore the first value
@@ -294,7 +278,7 @@ def average_time_reduction_per_day():
         linewidth=2,
         label="Moving average",
     )
-    figure_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/yes/figures"
+    figure_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/figures"
     if not os.path.exists(figure_path):
         os.makedirs(figure_path)
     plt.savefig(f"{figure_path}/average_time_reduction_per_day.png")
@@ -307,11 +291,11 @@ def average_trip_distances_per_day_for_direct_routes():
     ProgramParams.LS = 60
     ProgramParams.LEARNING_RATE = 0.01
     ProgramParams.IDLING_COST = 5
-    ProgramParams.AMOUNT_OF_VEHICLES = 100
+    ProgramParams.AMOUNT_OF_VEHICLES = 2000
     ProgramParams.RELOCATION_RADIUS = 10000
     ProgramParams.MAIN_AND_TARGET_NET_SYNC_ITERATIONS = 60
 
-    tripdata_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/yes/data"
+    tripdata_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/data"
     total_time_reduction = []
     routes_per_day = []
     total_time_reduction = []
@@ -402,7 +386,7 @@ def average_trip_distances_per_day_for_direct_routes():
     ax5.set_title("Average trip distances per day for direct routes")
     ax5.set_xticklabels(dates, rotation=45)
 
-    figure_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/yes/figures"
+    figure_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/figures"
     if not os.path.exists(figure_path):
         os.makedirs(figure_path)
     plt.savefig(f"{figure_path}/average_trip_distances_per_day_for_direct_routes.png")
@@ -416,11 +400,11 @@ def average_trip_distances_per_day_for_combination_routes():
     ProgramParams.LS = 60
     ProgramParams.LEARNING_RATE = 0.01
     ProgramParams.IDLING_COST = 5
-    ProgramParams.AMOUNT_OF_VEHICLES = 100
+    ProgramParams.AMOUNT_OF_VEHICLES = 2000
     ProgramParams.RELOCATION_RADIUS = 10000
     ProgramParams.MAIN_AND_TARGET_NET_SYNC_ITERATIONS = 60
 
-    tripdata_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/yes/data"
+    tripdata_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/data"
     total_time_reduction = []
     routes_per_day = []
     routes_per_day = []
@@ -532,7 +516,7 @@ def average_trip_distances_per_day_for_combination_routes():
     ax6.set_title("Average trip distances per day for combination routes")
     ax6.set_xticklabels(dates, rotation=45)
 
-    figure_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/yes/figures"
+    figure_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/figures"
     if not os.path.exists(figure_path):
         os.makedirs(figure_path)
     plt.savefig(f"{figure_path}/average_trip_distances_per_day_for_combination_routes.png")
@@ -545,11 +529,11 @@ def visualize_combi_route_ratio():
     ProgramParams.LS = 60
     ProgramParams.LEARNING_RATE = 0.01
     ProgramParams.IDLING_COST = 5
-    ProgramParams.AMOUNT_OF_VEHICLES = 100
+    ProgramParams.AMOUNT_OF_VEHICLES = 2000
     ProgramParams.RELOCATION_RADIUS = 10000
     ProgramParams.MAIN_AND_TARGET_NET_SYNC_ITERATIONS = 60
 
-    tripdata_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/yes/data"
+    tripdata_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/data"
     routes_per_day = []
     direct_routes_per_day = []
     combi_routes_per_day = []
@@ -612,7 +596,7 @@ def visualize_combi_route_ratio():
     ax5.set_title("Ratio between direct and combi routes")
     ax5.set_xticklabels(dates, rotation=45)
 
-    figure_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/yes/figures"
+    figure_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/figures"
     if not os.path.exists(figure_path):
         os.makedirs(figure_path)
     plt.savefig(f"{figure_path}/combi_route_ratio.png")
@@ -624,13 +608,13 @@ def visualize_vehicles():
     ProgramParams.LS = 60
     ProgramParams.LEARNING_RATE = 0.01
     ProgramParams.IDLING_COST = 5
-    ProgramParams.AMOUNT_OF_VEHICLES = 100
+    ProgramParams.AMOUNT_OF_VEHICLES = 2000
     ProgramParams.RELOCATION_RADIUS = 10000
     ProgramParams.MAIN_AND_TARGET_NET_SYNC_ITERATIONS = 60
 
     grid_cells_path = 'data/grid_cells.csv'
     subway_data_path = 'data/continuous_subway_data.csv'
-    vehicledata_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/yes/data"
+    vehicledata_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/data"
     grid_cells_df = pd.read_csv(grid_cells_path)
     subway_data_df = pd.read_csv(subway_data_path)
     
@@ -674,7 +658,7 @@ def visualize_vehicles():
     plt.xlabel("Latitude")
     plt.ylabel("Longitude")
 
-    figure_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/yes/figures"
+    figure_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/figures"
     if not os.path.exists(figure_path):
         os.makedirs(figure_path)
     plt.savefig(f"{figure_path}/vehicle_distribution.png", dpi=600)
@@ -687,11 +671,11 @@ def visualize_workload():
     ProgramParams.LS = 60
     ProgramParams.LEARNING_RATE = 0.01
     ProgramParams.IDLING_COST = 5
-    ProgramParams.AMOUNT_OF_VEHICLES = 100
+    ProgramParams.AMOUNT_OF_VEHICLES = 2000
     ProgramParams.RELOCATION_RADIUS = 10000
     ProgramParams.MAIN_AND_TARGET_NET_SYNC_ITERATIONS = 60
 
-    workloaddata_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/yes/data"
+    workloaddata_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/data"
     workload_per_day = []
 
     workloaddata_files = [
@@ -744,7 +728,7 @@ def visualize_workload():
     plt.ylim(0.85, 1)
 
 
-    figure_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/yes/figures"
+    figure_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/figures"
     if not os.path.exists(figure_path):
         os.makedirs(figure_path)
     plt.savefig(f"{figure_path}/workload.png")
