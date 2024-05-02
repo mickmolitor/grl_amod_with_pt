@@ -1,6 +1,7 @@
 import csv
 from datetime import timedelta
 import os
+from analysis.numerical_analysis import numerical_analysis
 from params.program_params import Mode, ProgramParams
 from params.program_stats import ProgramStats
 from program.execution import execute_graph_reinforcement_learning
@@ -147,24 +148,27 @@ while True:
         while True:
             print("Please remind to adapt to the correct paths.")
             user_input = input(
-                "Which script do you want to start? (\n   Plot average time reduction -> 1\n   Plot average trip distance for direct routes -> 2\n   Plot average trip distance for combination routes -> 3\n   Plot vehicle distribution -> 4\n   Plot combi route ratio -> 5\n   Plot workload -> 6\n) "
+                "Which script do you want to start? (\n   Numerical data analysis -> 1\n   Plot average time reduction -> 2\n   Plot average trip distance for direct routes -> 3\n   Plot average trip distance for combination routes -> 4\n   Plot vehicle distribution -> 5\n   Plot combi route ratio -> 6\n   Plot workload -> 7\n) "
             )
             if user_input == "1":
+                numerical_analysis()
+                break
+            if user_input == "2":
                 plt.average_time_reduction_per_day()
                 break
-            elif user_input == "2":
+            elif user_input == "3":
                 plt.average_trip_distances_per_day_for_direct_routes()
                 break
-            elif user_input == "3":
+            elif user_input == "4":
                 plt.average_trip_distances_per_day_for_combination_routes()
                 break
-            elif user_input == "4":
+            elif user_input == "5":
                 plt.visualize_vehicles()
                 break
-            elif user_input == "5":
+            elif user_input == "6":
                 plt.visualize_combi_route_ratio()
                 break
-            elif user_input == "6":
+            elif user_input == "7":
                 plt.visualize_workload()
                 break
             else:
