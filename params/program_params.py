@@ -3,9 +3,9 @@ from enum import Enum
 from program.interval.time import Time
 
 class Mode(Enum):
-    GRAPH_REINFORCEMENT_LEARNING = "Graph Reinforcement Learning"
+    GRAPH_REINFORCEMENT_LEARNING = "grl"
     # Just solve the optimization problem without knowing state values
-    BASELINE_PERFORMANCE = "Baseline Performance"
+    BASELINE_PERFORMANCE = "bl"
 
 class DataSet(Enum):
     YELLOW_CAB = "yellow_cab"
@@ -123,6 +123,18 @@ class ProgramParams:
 
     # Duration how long orders can be matched with vehicles in seconds
     ORDER_EXPIRY_DURATION = 120
+
+    def DATA_OUTPUT_FILE_PATH() -> str:
+        mode = ProgramParams.EXECUTION_MODE.value
+        dr = "_" if ProgramParams.DISCOUNT_RATE == 0.95 else ProgramParams.DISCOUNT_RATE
+        ls = "_" if ProgramParams.LS == 60 else ProgramParams.LS
+        lr = "_" if ProgramParams.LEARNING_RATE == 0.01 else ProgramParams.LEARNING_RATE
+        idling_cost = "_" if ProgramParams.IDLING_COST == 5 else ProgramParams.IDLING_COST
+        aov = "_" if ProgramParams.AMOUNT_OF_VEHICLES == 100 else ProgramParams.AMOUNT_OF_VEHICLES
+        re_radius = "_" if ProgramParams.RELOCATION_RADIUS == 10000 else ProgramParams.RELOCATION_RADIUS
+        direct_discount = "_" if ProgramParams.DIRECT_TRIP_DISCOUNT_FACTOR == 0.5 else ProgramParams.DIRECT_TRIP_DISCOUNT_FACTOR
+        main_target_sync = "_" if ProgramParams.MAIN_AND_TARGET_NET_SYNC_ITERATIONS == 60 else ProgramParams.MAIN_AND_TARGET_NET_SYNC_ITERATIONS
+        return f"{mode}/{dr}/{ls}/{lr}/{idling_cost}/{aov}/{re_radius}/{direct_discount}/{main_target_sync}"
 
     def set_member(member: str, value):
         if member == "DISCOUNT_RATE":

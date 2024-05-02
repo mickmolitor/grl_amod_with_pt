@@ -140,6 +140,8 @@ class StateValueNetworks:
             )
 
     def export_weights(self) -> None:
+        if not os.path.exists("training_data"):
+            os.makedirs("training_data")
         # Main networks
         torch.save(
             self.main_net.get_GNN_state_dict(),

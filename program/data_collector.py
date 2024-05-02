@@ -1,4 +1,5 @@
 import csv
+import os
 from program.interval.time import Time
 from program.order.order import Order
 from program.location.location import Location
@@ -29,6 +30,12 @@ class DataCollector:
     trip_data = []
 
     state_value_data = []
+
+    def output_path() -> str:
+        path = f"data_output/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/data"
+        if not os.path.exists(path):
+            os.makedirs(path)
+        return path
 
     def append_workload(current_time: Time, num_of_occupied_driver: int):
         DataCollector.workload.append(
@@ -120,14 +127,14 @@ class DataCollector:
         )
 
     def export_all_data():
-        csv_file_path = f"data_output/workload{ProgramParams.SIMULATION_DATE.strftime('%Y-%m-%d')}.csv"
+        csv_file_path = f"{DataCollector.output_path()}/workload{ProgramParams.SIMULATION_DATE.strftime('%Y-%m-%d')}.csv"
         with open(csv_file_path, mode="w") as file:
             writer = csv.writer(file)
             writer.writerow(["total_seconds", "num_of_occupied_driver"])
             for w in DataCollector.workload:
                 writer.writerow([w[0], w[1]])
 
-        csv_file_path = f"data_output/relocation_trip_data{ProgramParams.SIMULATION_DATE.strftime('%Y-%m-%d')}.csv"
+        csv_file_path = f"{DataCollector.output_path()}/relocation_trip_data{ProgramParams.SIMULATION_DATE.strftime('%Y-%m-%d')}.csv"
         with open(csv_file_path, mode="w") as file:
             writer = csv.writer(file)
             writer.writerow(
@@ -136,14 +143,14 @@ class DataCollector:
             for w in DataCollector.relocation_trip_data:
                 writer.writerow([w[0], w[1], w[2], w[3]])
 
-        csv_file_path = f"data_output/vehicle_data{ProgramParams.SIMULATION_DATE.strftime('%Y-%m-%d')}.csv"
+        csv_file_path = f"{DataCollector.output_path()}/vehicle_data{ProgramParams.SIMULATION_DATE.strftime('%Y-%m-%d')}.csv"
         with open(csv_file_path, mode="w") as file:
             writer = csv.writer(file)
             writer.writerow(["total_seconds", "id", "status", "lat", "lon"])
             for w in DataCollector.driver_data:
                 writer.writerow([w[0], w[1], w[2], w[3], w[4]])
 
-        csv_file_path = f"data_output/order_data{ProgramParams.SIMULATION_DATE.strftime('%Y-%m-%d')}.csv"
+        csv_file_path = f"{DataCollector.output_path()}/order_data{ProgramParams.SIMULATION_DATE.strftime('%Y-%m-%d')}.csv"
         with open(csv_file_path, mode="w") as file:
             writer = csv.writer(file)
             writer.writerow(
@@ -152,7 +159,7 @@ class DataCollector:
             for w in DataCollector.orders_data:
                 writer.writerow([w[0], w[1], w[2]])
 
-        csv_file_path = "data_output/orders_dataa.csv"
+        csv_file_path = f"{DataCollector.output_path()}/orders_dataa.csv"
         with open(csv_file_path, mode="w") as file:
             writer = csv.writer(file)
             writer.writerow(
@@ -170,7 +177,7 @@ class DataCollector:
             for w in DataCollector.orders_dataa:
                 writer.writerow([w[0], w[1], w[2], w[3], w[4], w[5], w[6], w[7]])
 
-        csv_file_path = f"data_output/average_time_reduction{ProgramParams.SIMULATION_DATE.strftime('%Y-%m-%d')}.csv"
+        csv_file_path = f"{DataCollector.output_path()}/average_time_reduction{ProgramParams.SIMULATION_DATE.strftime('%Y-%m-%d')}.csv"
         with open(csv_file_path, mode="w") as file:
             writer = csv.writer(file)
             writer.writerow(
@@ -179,14 +186,14 @@ class DataCollector:
             for w in DataCollector.time_reduction_quota:
                 writer.writerow([w[0], w[1]])
 
-        csv_file_path = "data_output/cell_id.csv"
+        csv_file_path = f"{DataCollector.output_path()}/cell_id.csv"
         with open(csv_file_path, mode="w") as file:
             writer = csv.writer(file)
             writer.writerow(["total_seconds", "cell_id"])
             for w in DataCollector.zone_id_list:
                 writer.writerow([w[0], w[1]])
 
-        csv_file_path = f"data_output/tripdata{ProgramParams.SIMULATION_DATE.strftime('%Y-%m-%d')}.csv"
+        csv_file_path = f"{DataCollector.output_path()}/tripdata{ProgramParams.SIMULATION_DATE.strftime('%Y-%m-%d')}.csv"
         with open(csv_file_path, mode="w") as file:
             writer = csv.writer(file)
             writer.writerow(
@@ -205,7 +212,7 @@ class DataCollector:
             for w in DataCollector.trip_data:
                 writer.writerow([w[0], w[1], w[2], w[3], w[4], w[5], w[6], w[7], w[8]])
 
-        csv_file_path = f"data_output/state_values{ProgramParams.SIMULATION_DATE.strftime('%Y-%m-%d')}.csv"
+        csv_file_path = f"{DataCollector.output_path()}/state_values{ProgramParams.SIMULATION_DATE.strftime('%Y-%m-%d')}.csv"
         with open(csv_file_path, mode="w") as file:
             writer = csv.writer(file)
             writer.writerow(["total_seconds", "zone_id", "state_value"])

@@ -3,18 +3,23 @@ from datetime import timedelta
 import os
 from params.program_params import Mode, ProgramParams
 from params.program_stats import ProgramStats
-from playground.graph_sage_test import test_graph_sage
 from program.execution import execute_graph_reinforcement_learning
 from program.grid.grid import Grid
 from program.order.orders import Orders
 from program.state.state import State
 from program.state.state_value_networks import StateValueNetworks
 from program.vehicle.vehicles import Vehicles
-from static_data_generation.public_transport_graph_creation import generate_shortest_paths_graph
-from static_data_generation.vehicle_data_initialization import initialize_vehicle_positions
+from static_data_generation.public_transport_graph_creation import (
+    generate_shortest_paths_graph,
+)
+from static_data_generation.vehicle_data_initialization import (
+    initialize_vehicle_positions,
+)
 from static_data_generation.zone_graph_creation import create_zone_graph, fix_zone_graph
 from visualization.visualize_vehicle_positions import visualize_vehicle_positions
 from visualization.visualize_graph import visualize_zone_graph
+import analysis.plots as plt
+
 
 def grl_train_and_test():
     StateValueNetworks.raze_weights()
@@ -36,6 +41,7 @@ def grl_train_and_test():
         State.reset()
         ProgramStats.SUM_OF_TIMESAFE = 0
         ProgramParams.SIMULATION_DATE += timedelta(1)
+
 
 # Read program params
 if os.path.isfile("execution/program_params.csv"):
@@ -113,7 +119,7 @@ while True:
                 "Which script do you want to start? (Create Zone Graph -> 1, Create Public Transport Graph -> 2) "
             )
             if user_input == "1":
-                create_zone_graph()        
+                create_zone_graph()
                 break
             if user_input == "2":
                 generate_shortest_paths_graph()
@@ -137,17 +143,27 @@ while True:
                 print("This option is not allowed. Please try again.")
         break
 
-    # elif user_input == "6":
-    #     while True:
-    #         user_input = input(
-    #             "Which script do you want to start? (Analyse trip data (data_analysis.py need to be adapted[date and folder structure]) -> 1) "
-    #         )
-    #         if user_input == "1":
-    #             analyse_trip_data()
-    #             break
-    #         else:
-    #             print("This option is not allowed. Please try again.")
-    #     break
+    elif user_input == "5":
+        while True:
+            print("Please remind to adapt to the correct paths.")
+            user_input = input(
+                "Which script do you want to start? (\n   Plot average time reduction -> 1\n   Plot average trip distance for direct routes -> 2\n   Plot average trip distance for combination routes -> 3\n   Plot vehicle distribution -> 4\n) "
+            )
+            if user_input == "1":
+                plt.average_time_reduction_per_day()
+                break
+            elif user_input == "2":
+                plt.average_trip_distances_per_day_for_direct_routes()
+                break
+            elif user_input == "3":
+                plt.average_trip_distances_per_day_for_combination_routes()
+                break
+            elif user_input == "4":
+                plt.visualize_vehicles()
+                break
+            else:
+                print("This option is not allowed. Please try again.")
+        break
 
     else:
         print("This option is not allowed. Please try again.")
