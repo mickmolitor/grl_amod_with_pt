@@ -14,6 +14,7 @@ from geopandas import GeoSeries, GeoDataFrame
 import geopandas as gpd
 
 
+from analysis.configuration import set_params
 from params.program_params import Mode, ProgramParams
 from program.location.location import Location
 
@@ -213,15 +214,7 @@ def total_time_reduction_per_car_in_minutes():
 
 
 def average_time_reduction_per_day():
-    # Set program params
-    ProgramParams.EXECUTION_MODE = Mode.GRAPH_REINFORCEMENT_LEARNING
-    ProgramParams.DISCOUNT_RATE = 0.95
-    ProgramParams.LS = 60
-    ProgramParams.LEARNING_RATE = 0.01
-    ProgramParams.IDLING_COST = 5
-    ProgramParams.AMOUNT_OF_VEHICLES = 2000
-    ProgramParams.RELOCATION_RADIUS = 10000
-    ProgramParams.MAIN_AND_TARGET_NET_SYNC_ITERATIONS = 60
+    set_params()
 
     orders_path = "data/for_hire"
     tripdata_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/data"
@@ -285,15 +278,7 @@ def average_time_reduction_per_day():
 
 
 def average_trip_distances_per_day_for_direct_routes():
-    # Set program params
-    ProgramParams.EXECUTION_MODE = Mode.GRAPH_REINFORCEMENT_LEARNING
-    ProgramParams.DISCOUNT_RATE = 0.95
-    ProgramParams.LS = 60
-    ProgramParams.LEARNING_RATE = 0.01
-    ProgramParams.IDLING_COST = 5
-    ProgramParams.AMOUNT_OF_VEHICLES = 2000
-    ProgramParams.RELOCATION_RADIUS = 10000
-    ProgramParams.MAIN_AND_TARGET_NET_SYNC_ITERATIONS = 60
+    set_params()
 
     tripdata_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/data"
     total_time_reduction = []
@@ -394,15 +379,7 @@ def average_trip_distances_per_day_for_direct_routes():
 
 
 def average_trip_distances_per_day_for_combination_routes():
-    # Set program params
-    ProgramParams.EXECUTION_MODE = Mode.GRAPH_REINFORCEMENT_LEARNING
-    ProgramParams.DISCOUNT_RATE = 0.95
-    ProgramParams.LS = 60
-    ProgramParams.LEARNING_RATE = 0.01
-    ProgramParams.IDLING_COST = 5
-    ProgramParams.AMOUNT_OF_VEHICLES = 2000
-    ProgramParams.RELOCATION_RADIUS = 10000
-    ProgramParams.MAIN_AND_TARGET_NET_SYNC_ITERATIONS = 60
+    set_params()
 
     tripdata_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/data"
     total_time_reduction = []
@@ -523,15 +500,7 @@ def average_trip_distances_per_day_for_combination_routes():
 
 
 def visualize_combi_route_ratio():
-    # Set program params
-    ProgramParams.EXECUTION_MODE = Mode.GRAPH_REINFORCEMENT_LEARNING
-    ProgramParams.DISCOUNT_RATE = 0.95
-    ProgramParams.LS = 60
-    ProgramParams.LEARNING_RATE = 0.01
-    ProgramParams.IDLING_COST = 5
-    ProgramParams.AMOUNT_OF_VEHICLES = 2000
-    ProgramParams.RELOCATION_RADIUS = 10000
-    ProgramParams.MAIN_AND_TARGET_NET_SYNC_ITERATIONS = 60
+    set_params()
 
     tripdata_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/data"
     routes_per_day = []
@@ -602,15 +571,7 @@ def visualize_combi_route_ratio():
     plt.savefig(f"{figure_path}/combi_route_ratio.png")
 
 def visualize_vehicles():
-    # Set program params
-    ProgramParams.EXECUTION_MODE = Mode.GRAPH_REINFORCEMENT_LEARNING
-    ProgramParams.DISCOUNT_RATE = 0.95
-    ProgramParams.LS = 60
-    ProgramParams.LEARNING_RATE = 0.01
-    ProgramParams.IDLING_COST = 5
-    ProgramParams.AMOUNT_OF_VEHICLES = 2000
-    ProgramParams.RELOCATION_RADIUS = 10000
-    ProgramParams.MAIN_AND_TARGET_NET_SYNC_ITERATIONS = 60
+    set_params()
 
     grid_cells_path = 'data/grid_cells.csv'
     subway_data_path = 'data/continuous_subway_data.csv'
@@ -665,15 +626,7 @@ def visualize_vehicles():
 
 
 def visualize_workload():
-    # Set program params
-    ProgramParams.EXECUTION_MODE = Mode.GRAPH_REINFORCEMENT_LEARNING
-    ProgramParams.DISCOUNT_RATE = 0.95
-    ProgramParams.LS = 60
-    ProgramParams.LEARNING_RATE = 0.01
-    ProgramParams.IDLING_COST = 5
-    ProgramParams.AMOUNT_OF_VEHICLES = 2000
-    ProgramParams.RELOCATION_RADIUS = 10000
-    ProgramParams.MAIN_AND_TARGET_NET_SYNC_ITERATIONS = 60
+    set_params()
 
     workloaddata_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/data"
     workload_per_day = []
