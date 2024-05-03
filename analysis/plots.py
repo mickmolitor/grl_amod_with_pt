@@ -271,6 +271,9 @@ def average_time_reduction_per_day():
         linewidth=2,
         label="Moving average",
     )
+
+    plt.legend()
+
     figure_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/figures"
     if not os.path.exists(figure_path):
         os.makedirs(figure_path)
@@ -370,6 +373,8 @@ def average_trip_distances_per_day_for_direct_routes():
     ax5.set_ylabel("Average trip distances per day in km")
     ax5.set_title("Average trip distances per day for direct routes")
     ax5.set_xticklabels(dates, rotation=45)
+
+    plt.legend()
 
     figure_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/figures"
     if not os.path.exists(figure_path):
@@ -493,6 +498,8 @@ def average_trip_distances_per_day_for_combination_routes():
     ax6.set_title("Average trip distances per day for combination routes")
     ax6.set_xticklabels(dates, rotation=45)
 
+    plt.legend()
+
     figure_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/figures"
     if not os.path.exists(figure_path):
         os.makedirs(figure_path)
@@ -564,6 +571,8 @@ def visualize_combi_route_ratio():
     ax5.set_ylabel("Amount of accepted orders")
     ax5.set_title("Ratio between direct and combi routes")
     ax5.set_xticklabels(dates, rotation=45)
+
+    plt.legend()
 
     figure_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/figures"
     if not os.path.exists(figure_path):
@@ -678,7 +687,7 @@ def visualize_workload():
         label="Moving average",
     )
 
-    plt.ylim(0.85, 1)
+    plt.ylim(0.7, 1)
 
 
     figure_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/figures"

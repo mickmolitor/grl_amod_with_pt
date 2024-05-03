@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime
 import os
 import re
 import pandas as pd
@@ -28,16 +28,12 @@ def numerical_analysis():
 
     set_params()
 
+    result_str = ""
     base_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/data"
 
-    files = [
-        f
-        for f in os.listdir(base_path)
-        if f.endswith(".csv") and f.startswith("tripdata")
-    ]
-    dates = [re.search(r"(\d{4}-\d{2}-\d{2})", f).group(1) for f in files]
-    dates.sort(key=lambda date: datetime.strptime(date, "%Y-%m-%d"))
+    dates = [datetime.date(2023, 7, 24) + datetime.timedelta(days=x) for x in range(7)]
 
+    print(dates)
     # Laden und Zusammenführen der Daten für jeden Dateityp
     data = load_and_merge_data(base_path, "tripdata", dates)
     datarl = load_and_merge_data(base_path, "relocation_trip_data", dates)
@@ -45,41 +41,31 @@ def numerical_analysis():
     dataorders = load_and_merge_data("data/for_hire", "orders_", dates)
 
 
-    print(f'Durchschnittliche Zeitersparnis: {round(sum(data["time_reduction"]/60/24/len(dates)/ProgramParams.AMOUNT_OF_VEHICLES), 2)}')
-    print(f'Anzahl Orders pro Tag: {len(data)/len(dates)}')
-    print(f'Prozentualer Anteil Combirouten: {round(sum(data["combi_route"]/len(data)), 2)}')
+    result_str += f'Average time reduction: {round(sum(data["time_reduction"]/60/24/len(dates)/ProgramParams.AMOUNT_OF_VEHICLES), 2)}\n'
+    result_str += f'Amount of served orders per day: {len(data)/len(dates)}\n'
+    result_str += f'Combi route quota: {round(100*sum(data["combi_route"]/len(data)), 2)}%\n'
 
+    result_str += f'Average vehicle route length: {round(sum(data["total_vehicle_distance"]/len(data)),2)}\n'
 
-    print(f'Durschnittliche Routenlänge: {round(sum(data["total_vehicle_distance"]/len(data)),2)}')
+    amount_occupied = datadriver.loc[datadriver["status"] == "occupied", "status"].count()
+    amount_relocation = datadriver.loc[datadriver["status"] == "relocation", "status"].count()
+    amount_relocation = datadriver.loc[datadriver["status"] == "idling", "status"].count()
+    result_str += f"Vehicle workload: {amount_occupied/len(datadriver)} (Relocation: {amount_relocation/len(datadriver)}, Idling: {amount_relocation/len(datadriver)})\n"
 
-    anzahl_occupied = datadriver.loc[datadriver["status"] == "occupied", "status"].count()
-    anzahl_relocation = datadriver.loc[datadriver["status"] == "relocation", "status"].count()
-    anzahl_idling = datadriver.loc[datadriver["status"] == "idling", "status"].count()
-    print(f"Auslastung der Fahrzeuge: {anzahl_occupied/len(datadriver)} (Relocation: {anzahl_relocation/len(datadriver)}, Idling: {anzahl_idling/len(datadriver)}")
+    result_str += f'Total amount of served orders: {len(data)}\n'
 
+    total_time_reduction =  round(sum(data["time_reduction"]/60), 2)
+    result_str += f'Total time reduction in minutes: {total_time_reduction}\n'
+    result_str += f'Average time reduction per order in minutes: {total_time_reduction/len(dataorders)}\n'
+    result_str += f'Percentage of accepted orders: {round(100*len(data)/len(dataorders), 2)}%\n'
 
-    print(f'Anzahl der Routen: {len(data)}')
+    result_str += f'Amount of relocations: {len(datarl)}\n'
+    result_str += f'Average distance of relocation in meters: {round(sum(datarl["distance"]/len(datarl)), 2)}\n'
 
-    gesamte_zeitersparnis =  round(sum(data["time_reduction"]/60), 2)
-    print(f'Gesame Zeitersparnis in Minute: {gesamte_zeitersparnis}')
-    print(f'Durchschnittliche Zeitersparnis pro Order in Minuten: {gesamte_zeitersparnis/len(dataorders)}')
-    print(f'Prozentualer Anteil Orders: {len(data)/len(dataorders)}')
-
-    print(f'Anzahl an relocation: {len(datarl)}')
-    print(f'Durchschnittliche Entfernung relocation: {round(sum(datarl["distance"]/len(datarl)), 2)}')
-
-    # pathstate = "code/training_data/state_value_table.csv"
-    # datastate = pd.read_csv(pathstate)
-
-    # print("##########################################################################################")
-    # anzahl_max_statevalue = datastate.loc[datastate["state_value"] == 1000, "state_value"].count()
-    # print(f'Anzahl state_value_Werte = maximum: {anzahl_max_statevalue}')
-    # print(f'Prozentualer Anteil: {anzahl_max_statevalue/len(datastate)}')
-
-    # anzahl_min_statevalue = datastate.loc[datastate["state_value"] == -1000, "state_value"].count()
-    # print(f'Anzahl state_value_Werte = min: {anzahl_min_statevalue}')
-    # print(f'Prozentualer Anteil: {anzahl_min_statevalue/len(datastate)}')
-
-    # anzahl_kleiner0_statevalue = datastate.loc[datastate["state_value"] <= 0, "state_value"].count()
-    # print(f'Anzahl state_value_Werte = keliner 0: {anzahl_kleiner0_statevalue}')
-    # print(f'Prozentualer Anteil: {anzahl_kleiner0_statevalue/len(datastate)}')
+    figure_path = f"store/{ProgramParams.DATA_OUTPUT_FILE_PATH()}/figures"
+    if not os.path.exists(figure_path):
+        os.makedirs(figure_path)
+    with open(f"{figure_path}/analysis_results.txt", mode="w") as text_file:
+        text_file.write(result_str)
+    print(result_str)
+    
