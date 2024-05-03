@@ -62,7 +62,7 @@ def execute_graph_reinforcement_learning():
 
         # Generate routes
         LOGGER.debug("Generate routes")
-        order_routes_dict = generate_routes(orders)
+        order_routes_dict = generate_routes(list(State.get_state().orders_dict.values()))
 
         # Generate Action-Driver pairs with all available routes and drivers
         LOGGER.debug("Generate vehicle-action-pairs")
