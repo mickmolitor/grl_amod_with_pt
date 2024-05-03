@@ -1,8 +1,8 @@
 import math
-from program.graph_reinforcement_learning.deep_q_network import DeepQNetwork
+from program.graph_reinforcement_learning.deep_state_network import DeepStateNetwork
 import torch.optim as optim
 
-class MainNetwork(DeepQNetwork):
+class MainNetwork(DeepStateNetwork):
 
     def __init__(self) -> None:
         super(MainNetwork, self).__init__()

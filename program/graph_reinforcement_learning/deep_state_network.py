@@ -13,7 +13,7 @@ from program.zone.zone import Zone
 from program.zone.zone_graph import ZoneGraph
 
 
-class DeepQNetwork:
+class DeepStateNetwork:
 
     def __init__(self) -> None:
         self.graph_sage = GraphSAGE()

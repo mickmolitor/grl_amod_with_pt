@@ -1,11 +1,11 @@
 import torch
 from program.action.action import Action
-from program.graph_reinforcement_learning.deep_q_network import DeepQNetwork
+from program.graph_reinforcement_learning.deep_state_network import DeepStateNetwork
 from program.interval.time import Time
 from program.zone.zone import Zone
 
 
-class TargetNetwork(DeepQNetwork):
+class TargetNetwork(DeepStateNetwork):
     def __init__(self) -> None:
         super(TargetNetwork, self).__init__()
 
