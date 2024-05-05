@@ -38,7 +38,7 @@ class ProgramParams:
 
     IDLING_COST = 5
 
-    AMOUNT_OF_VEHICLES = 100
+    AMOUNT_OF_VEHICLES = 2000
 
     # Radius for relocation in meters
     RELOCATION_RADIUS = 10000
