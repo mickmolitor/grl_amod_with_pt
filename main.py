@@ -1,7 +1,7 @@
 import csv
 from datetime import timedelta
 import os
-from analysis.numerical_analysis import numerical_analysis
+from analysis.numerical_analysis import numerical_analysis, numerical_comparison
 from params.program_params import Mode, ProgramParams
 from params.program_stats import ProgramStats
 from program.execution import execute_graph_reinforcement_learning
@@ -63,7 +63,7 @@ if os.path.isfile("execution/run.csv"):
 
 while True:
     user_input = input(
-        "Which menu you want to enter? (Graph Reinforcement Learning -> 1, Baseline Performance -> 2, Static Data Generation -> 3, Visualization -> 4, Data Analysis -> 5) "
+        "Which menu you want to enter? (Graph Reinforcement Learning -> 1, Static Data Generation -> 2, Visualization -> 3, Data Analysis -> 4) "
     )
     if user_input == "1":
         ProgramParams.EXECUTION_MODE = Mode.GRAPH_REINFORCEMENT_LEARNING
@@ -83,38 +83,6 @@ while True:
         break
 
     elif user_input == "2":
-        # while True:
-        #     ProgramParams.EXECUTION_MODE = Mode.BASELINE_PERFORMANCE
-        #     user_input = input(
-        #         "Which script do you want to start? (Offline Policy Evaluation -> 1, Online Training -> 2, Start DRL (one day) -> 3) "
-        #     )
-        #     if user_input == "1":
-        #         initialize_driver_positions()
-        #         # Train the ope networks with online data
-        #         for i in range(14):
-        #             train_ope()
-        #             Order.reset()
-        #             State.reset()
-        #             ProgramParams.SIMULATION_DATE += timedelta(1)
-        #         break
-        #     elif user_input == "2":
-        #         initialize_driver_positions()
-        #         # Train the algorithm On-Policy
-        #         # You have to set the date in program_params on the Date you want (old date + train duration)
-        #         for i in range(7):
-        #             start_drl()
-        #             Order.reset()
-        #             State.reset()
-        #             ProgramParams.SIMULATION_DATE += timedelta(1)
-        #         break
-        #     elif user_input == "3":
-        #         start_drl()
-        #         break
-        #     else:
-        #         print("This option is not allowed. Please try again.")
-        break
-
-    elif user_input == "3":
         while True:
             user_input = input(
                 "Which script do you want to start? (Create Zone Graph -> 1, Create Public Transport Graph -> 2) "
@@ -129,7 +97,7 @@ while True:
                 print("This option is not allowed. Please try again.")
         break
 
-    elif user_input == "4":
+    elif user_input == "3":
         while True:
             user_input = input(
                 "Which script do you want to start? (Visualize Zone Graph -> 1, Visualize vehicle positions -> 2) "
@@ -144,35 +112,55 @@ while True:
                 print("This option is not allowed. Please try again.")
         break
 
-    elif user_input == "5":
+    elif user_input == "4":
         while True:
             print("Please remind to adapt to the correct paths.")
             user_input = input(
-                "Which script do you want to start? (\n   Numerical data analysis -> 1\n   Plot average time reduction -> 2\n   Plot average trip distance for direct routes -> 3\n   Plot average trip distance for combination routes -> 4\n   Plot vehicle distribution -> 5\n   Plot combi route ratio -> 6\n   Plot workload -> 7\n) "
+                "Which script do you want to start? (Numerical analysis -> 1, Graphical analysis -> 2) "
             )
+
             if user_input == "1":
-                numerical_analysis()
+                while True:
+                    user_input = input(
+                        "Which script do you want to start? (Numerical data analysis -> 1 Numerical data comparison -> 2) "
+                    )
+                    if user_input == "1":
+                        numerical_analysis()
+                        break
+                    elif user_input == "2":
+                        numerical_comparison()
+                        break
+                    else:
+                        print("This option is not allowed. Please try again.")
                 break
-            if user_input == "2":
-                plt.average_time_reduction_per_day()
+            
+            elif user_input == "2":
+                while True:
+                    user_input = input(
+                        "Which script do you want to start? (\n   Plot average time reduction -> 1\n   Plot average trip distance for direct routes -> 2\n   Plot average trip distance for combination routes -> 3\n   Plot vehicle distribution -> 4\n   Plot combi route ratio -> 5\n   Plot workload -> 6\n) "
+                    )
+                    if user_input == "1":
+                        plt.average_time_reduction_per_day()
+                        break
+                    elif user_input == "2":
+                        plt.average_trip_distances_per_day_for_direct_routes()
+                        break
+                    elif user_input == "3":
+                        plt.average_trip_distances_per_day_for_combination_routes()
+                        break
+                    elif user_input == "4":
+                        plt.visualize_vehicles()
+                        break
+                    elif user_input == "5":
+                        plt.visualize_combi_route_ratio()
+                        break
+                    elif user_input == "6":
+                        plt.visualize_workload()
+                        break
+                    else:
+                        print("This option is not allowed. Please try again.")
                 break
-            elif user_input == "3":
-                plt.average_trip_distances_per_day_for_direct_routes()
-                break
-            elif user_input == "4":
-                plt.average_trip_distances_per_day_for_combination_routes()
-                break
-            elif user_input == "5":
-                plt.visualize_vehicles()
-                break
-            elif user_input == "6":
-                plt.visualize_combi_route_ratio()
-                break
-            elif user_input == "7":
-                plt.visualize_workload()
-                break
-            else:
-                print("This option is not allowed. Please try again.")
+    
         break
 
     else:
