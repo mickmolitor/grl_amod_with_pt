@@ -148,7 +148,7 @@ class ProgramParams:
         elif member == "AMOUNT_OF_VEHICLES":
             ProgramParams.AMOUNT_OF_VEHICLES = int(value)
         elif member == "RELOCATION_RADIUS":
-            ProgramParams.RELOCATION_RADIUS = float(value)
+            ProgramParams.RELOCATION_RADIUS = int(value)
         elif member == "DIRECT_TRIP_DISCOUNT_FACTOR":
             ProgramParams.DIRECT_TRIP_DISCOUNT_FACTOR = float(value)
         elif member == "MAIN_AND_TARGET_NET_SYNC_ITERATIONS":
