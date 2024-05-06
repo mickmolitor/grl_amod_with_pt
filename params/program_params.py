@@ -130,7 +130,7 @@ class ProgramParams:
         ls = "_" if ProgramParams.LS == 60 else ProgramParams.LS
         lr = "_" if ProgramParams.LEARNING_RATE == 0.01 else ProgramParams.LEARNING_RATE
         idling_cost = "_" if ProgramParams.IDLING_COST == 5 else ProgramParams.IDLING_COST
-        aov = "_" if ProgramParams.AMOUNT_OF_VEHICLES == 100 else ProgramParams.AMOUNT_OF_VEHICLES
+        aov = "_" if ProgramParams.AMOUNT_OF_VEHICLES == 2000 else ProgramParams.AMOUNT_OF_VEHICLES
         re_radius = "_" if ProgramParams.RELOCATION_RADIUS == 10000 else ProgramParams.RELOCATION_RADIUS
         direct_discount = "_" if ProgramParams.DIRECT_TRIP_DISCOUNT_FACTOR == 0.5 else ProgramParams.DIRECT_TRIP_DISCOUNT_FACTOR
         main_target_sync = "_" if ProgramParams.MAIN_AND_TARGET_NET_SYNC_ITERATIONS == 60 else ProgramParams.MAIN_AND_TARGET_NET_SYNC_ITERATIONS
