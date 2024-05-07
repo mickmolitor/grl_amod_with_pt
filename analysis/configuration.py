@@ -11,7 +11,7 @@ def set_params():
     ProgramParams.AMOUNT_OF_VEHICLES = 2000
     ProgramParams.RELOCATION_RADIUS = 10000
     ProgramParams.DIRECT_TRIP_DISCOUNT_FACTOR = 0.5
-    ProgramParams.MAIN_AND_TARGET_NET_SYNC_ITERATIONS = 240
+    ProgramParams.MAIN_AND_TARGET_NET_SYNC_ITERATIONS = 60
 
 # Run this to get the parameter and its values for the comparison
 def get_comparison_values() -> tuple[str, list]:
