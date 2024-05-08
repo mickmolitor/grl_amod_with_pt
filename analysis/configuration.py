@@ -16,6 +16,8 @@ def set_params():
 # Run this to get the parameter and its values for the comparison
 def get_comparison_values() -> tuple[str, list]:
     # Change parameter here
-    parameter = "MAIN_AND_TARGET_NET_SYNC_ITERATIONS"
-    values = [30, 60, 120, 240]
-    return (parameter, values)
+    parameter = "IDLING_COST"
+    values = [1, 3, 5, 10, 30]
+    def cast(value):
+        return float(value)
+    return (parameter, list(map(cast, values)))
