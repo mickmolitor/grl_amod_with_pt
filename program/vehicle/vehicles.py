@@ -14,8 +14,9 @@ class Vehicles:
             with open("input_data/vehicles.csv", mode="r") as file:
                 reader = csv.DictReader(file)
                 for row in reader:
+                    id = int(row["vehicle_id"])
                     location = Location(float(row["lat"]), float(row["lon"]))
-                    Vehicles._vehicles.append(Vehicle(location))
+                    Vehicles._vehicles.append(Vehicle(location, id=id))
 
         return Vehicles._vehicles
 

@@ -7,8 +7,8 @@ ID_PROVIDER = IdProvider()
 
 class Vehicle:
 
-    def __init__(self, start_position: Location) -> None:
-        self.id = ID_PROVIDER.get_id()
+    def __init__(self, start_position: Location, id: int = None) -> None:
+        self.id = id if id != None else ID_PROVIDER.get_id()
         self.current_position = start_position
         self.job: VehicleJob = None
         # Time that passed since drivers last job
