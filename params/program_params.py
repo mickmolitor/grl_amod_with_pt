@@ -46,6 +46,8 @@ class ProgramParams:
     # How much direct trips should be discounted in the optimization
     DIRECT_TRIP_DISCOUNT_FACTOR = 0.5
 
+    # Time the vehicle needs to idle until it can relocate
+    MAX_IDLING_TIME = 300
 
     ######################################################################################################
     ############### Deep Reinforcement Learning ###############
@@ -57,8 +59,7 @@ class ProgramParams:
     ######################################################################################################
     ############### Other environment values which are static ###############
 
-    # Time the vehicle needs to idle until it can relocate
-    MAX_IDLING_TIME = 300
+
 
     # Minimal trip time for routes to be eligible for combined routes in seconds
     L1 = 0
@@ -126,6 +127,8 @@ class ProgramParams:
 
     def DATA_OUTPUT_FILE_PATH() -> str:
         mode = ProgramParams.EXECUTION_MODE.value
+        # In the front since it was added later
+        mit = "_" if ProgramParams.MAX_IDLING_TIME == 300 else ProgramParams.MAX_IDLING_TIME
         dr = "_" if ProgramParams.DISCOUNT_RATE == 0.95 else ProgramParams.DISCOUNT_RATE
         ls = "_" if ProgramParams.LS == 60 else ProgramParams.LS
         lr = "_" if ProgramParams.LEARNING_RATE == 0.01 else ProgramParams.LEARNING_RATE
@@ -134,10 +137,12 @@ class ProgramParams:
         re_radius = "_" if ProgramParams.RELOCATION_RADIUS == 10000 else ProgramParams.RELOCATION_RADIUS
         direct_discount = "_" if ProgramParams.DIRECT_TRIP_DISCOUNT_FACTOR == 0.5 else ProgramParams.DIRECT_TRIP_DISCOUNT_FACTOR
         main_target_sync = "_" if ProgramParams.MAIN_AND_TARGET_NET_SYNC_ITERATIONS == 60 else ProgramParams.MAIN_AND_TARGET_NET_SYNC_ITERATIONS
-        return f"{mode}/{dr}/{ls}/{lr}/{idling_cost}/{aov}/{re_radius}/{direct_discount}/{main_target_sync}"
+        return f"{mode}/{mit}/{dr}/{ls}/{lr}/{idling_cost}/{aov}/{re_radius}/{direct_discount}/{main_target_sync}"
 
     def set_member(member: str, value):
-        if member == "DISCOUNT_RATE":
+        if member == "MAX_IDLING_TIME":
+            ProgramParams.MAX_IDLING_TIME = int(value)
+        elif member == "DISCOUNT_RATE":
             ProgramParams.DISCOUNT_RATE = float(value)
         elif member == "LS":
             ProgramParams.LS = float(value)
