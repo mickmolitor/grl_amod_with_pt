@@ -21,9 +21,21 @@ from visualization.visualize_vehicle_positions import visualize_vehicle_position
 from visualization.visualize_graph import visualize_zone_graph
 import analysis.plots as plt
 
+def raze_data():
+    StateValueNetworks.raze_weights()
+    # Delete files
+    if os.path.exists("input_data/average_time_reduction_sat.csv"):
+        os.remove("input_data/average_time_reduction_sat.csv")
+    if os.path.exists("input_data/average_time_reduction_sun.csv"):
+        os.remove("input_data/average_time_reduction_sun.csv")
+    if os.path.exists("input_data/average_time_reduction_wd.csv"):
+        os.remove("input_data/average_time_reduction_wd.csv")
+    if os.path.exists("input_data/vehicles.csv"):
+        os.remove("input_data/vehicles.csv")
+
 
 def grl_train_and_test():
-    StateValueNetworks.raze_weights()
+    raze_data()
     initialize_vehicle_positions()
     # Train the algorithm On-Policy
     for i in range(14):
