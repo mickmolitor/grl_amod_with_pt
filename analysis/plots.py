@@ -602,7 +602,7 @@ def visualize_vehicles():
         with open(vehicledata_file_path, mode="r") as file:
             reader = csv.DictReader(file)
             for row in reader:
-                if int(row["total_seconds"]) == 86340:
+                if int(row["total_seconds"]) == 82800:
                     vehicledata.append({"lat": float(row["lat"]), "lon": float(row["lon"])})
     vehicle_data_df = pd.DataFrame(vehicledata)
 
