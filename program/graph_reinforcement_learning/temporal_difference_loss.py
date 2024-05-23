@@ -22,4 +22,4 @@ class TemporalDifferenceLoss(nn.Module):
                 + discount_value * target_value
             ) ** 2
 
-        return loss
+        return ProgramParams.LEARNING_RATE * loss
