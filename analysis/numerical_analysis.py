@@ -99,7 +99,7 @@ def analyse():
     output_data["Average distance of relocation in meters"] = round(
         sum(datarl["distance"] / len(datarl)), 2
     )
-    output_data["Jensen-Shannon-Divergence"] = calculate_vehicle_distribution(datadriver)
+    output_data["Jensen-Shannon-Divergence"] = round(calculate_vehicle_distribution(datadriver), 4)
 
     return output_data
 

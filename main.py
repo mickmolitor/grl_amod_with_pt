@@ -2,6 +2,7 @@ import csv
 from datetime import timedelta
 import os
 from analysis.numerical_analysis import numerical_analysis, numerical_comparison
+from analysis.plots_comparison import plot_comparison
 from params.program_params import Mode, ProgramParams
 from params.program_stats import ProgramStats
 from program.execution import execute_graph_reinforcement_learning
@@ -149,29 +150,41 @@ while True:
             elif user_input == "2":
                 while True:
                     user_input = input(
-                        "Which script do you want to start? (\n   Plot average time reduction -> 1\n   Plot average trip distance for direct routes -> 2\n   Plot average trip distance for combination routes -> 3\n   Plot vehicle distribution -> 4\n   Plot combi route ratio -> 5\n   Plot workload -> 6\n) "
+                        "Which script do you want to start? (Data analysis -> 1 Data comparison -> 2) "
                     )
                     if user_input == "1":
-                        plt.average_time_reduction_per_day()
+                        while True:
+                            user_input = input(
+                                "Which script do you want to start? (\n   Plot average time reduction -> 1\n   Plot average trip distance for direct routes -> 2\n   Plot average trip distance for combination routes -> 3\n   Plot vehicle distribution -> 4\n   Plot combi route ratio -> 5\n   Plot workload -> 6\n) "
+                            )
+                            if user_input == "1":
+                                plt.average_time_reduction_per_day()
+                                break
+                            elif user_input == "2":
+                                plt.average_trip_distances_per_day_for_direct_routes()
+                                break
+                            elif user_input == "3":
+                                plt.average_trip_distances_per_day_for_combination_routes()
+                                break
+                            elif user_input == "4":
+                                plt.visualize_vehicles()
+                                break
+                            elif user_input == "5":
+                                plt.visualize_combi_route_ratio()
+                                break
+                            elif user_input == "6":
+                                plt.visualize_workload()
+                                break
+                            else:
+                                print("This option is not allowed. Please try again.")
                         break
                     elif user_input == "2":
-                        plt.average_trip_distances_per_day_for_direct_routes()
-                        break
-                    elif user_input == "3":
-                        plt.average_trip_distances_per_day_for_combination_routes()
-                        break
-                    elif user_input == "4":
-                        plt.visualize_vehicles()
-                        break
-                    elif user_input == "5":
-                        plt.visualize_combi_route_ratio()
-                        break
-                    elif user_input == "6":
-                        plt.visualize_workload()
+                        plot_comparison()
                         break
                     else:
                         print("This option is not allowed. Please try again.")
                 break
+                
     
         break
 
