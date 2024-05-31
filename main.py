@@ -1,7 +1,7 @@
 import csv
 from datetime import timedelta
 import os
-from analysis.numerical_analysis import numerical_analysis, numerical_comparison
+from analysis.numerical_analysis import numerical_analysis, numerical_comparison, numerical_multi_comparison
 from analysis.plots_comparison import plot_comparison
 from params.program_params import Mode, ProgramParams
 from params.program_stats import ProgramStats
@@ -135,13 +135,16 @@ while True:
             if user_input == "1":
                 while True:
                     user_input = input(
-                        "Which script do you want to start? (Numerical data analysis -> 1 Numerical data comparison -> 2) "
+                        "Which script do you want to start? (Numerical data analysis -> 1, Numerical data comparison -> 2, Numerical multi data comparison -> 3) "
                     )
                     if user_input == "1":
                         numerical_analysis()
                         break
                     elif user_input == "2":
                         numerical_comparison()
+                        break
+                    elif user_input == "3":
+                        numerical_multi_comparison()
                         break
                     else:
                         print("This option is not allowed. Please try again.")
@@ -150,7 +153,7 @@ while True:
             elif user_input == "2":
                 while True:
                     user_input = input(
-                        "Which script do you want to start? (Data analysis -> 1 Data comparison -> 2) "
+                        "Which script do you want to start? (Data analysis -> 1, Data comparison -> 2) "
                     )
                     if user_input == "1":
                         while True:

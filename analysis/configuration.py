@@ -22,3 +22,19 @@ def get_comparison_values() -> tuple[str, list]:
     def cast(value):
         return float(value)
     return (parameter, list(map(cast, values)))
+
+def get_multi_comparison_values() -> list[dict]:
+    return [
+        {
+            "AMOUNT_OF_VEHICLES": 6000,
+            "RELOCATION_RADIUS": 5000
+        },
+        {
+            "DIRECT_TRIP_DISCOUNT_FACTOR": 0.45
+        },
+        {
+            "DISCOUNT_RATE": 0.99,
+            "LS": 120,
+            "MAIN_AND_TARGET_NET_SYNC_ITERATIONS": 120
+        }
+    ]

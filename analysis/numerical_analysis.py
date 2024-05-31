@@ -8,7 +8,7 @@ import shutil
 import matplotlib.pyplot as plt
 from scipy.spatial.distance import jensenshannon
 
-from analysis.configuration import set_params, get_comparison_values
+from analysis.configuration import get_multi_comparison_values, set_params, get_comparison_values
 from params.program_params import Mode, ProgramParams
 from program.grid.grid import Grid
 from program.location.location import Location
@@ -181,3 +181,52 @@ def numerical_comparison():
         writer.writerow(["Criteria"] + [str(value) for value in values])
         for row in output_data:
             writer.writerow([row] + output_data[row])
+
+def numerical_multi_comparison():
+    set_params()
+    values = get_multi_comparison_values()
+    output_data = {
+        "Average time reduction per vehicle per hour in minutes": [],
+        "Amount of served orders per day": [],
+        "Combi route quota": [],
+        "Average vehicle route length in meters": [],
+        "Vehicle workload": [],
+        "Relocation workload": [],
+        "Idling quota": [],
+        "Average time reduction per order in minutes": [],
+        "Percentage of accepted orders": [],
+        "Average distance of relocation in meters": [],
+        "Jensen-Shannon-Divergence": []
+    }
+
+    for value in values:
+        for key in value:
+            ProgramParams.set_member(key, value[key])
+
+        data = analyse()
+        for key in data:
+            output_data[key].append(data[key])
+
+    figure_path = f"store/multi_comparisons"
+    file_name = ""
+    for value in values:
+        for key, value in value.items():
+            file_name += f"{key}{value}_"
+    file_name.rstrip('_')
+
+    if not os.path.exists(figure_path):
+        os.makedirs(figure_path)
+    with open(f"{figure_path}/{file_name}.csv", mode="w") as file:
+        writer = csv.writer(file)
+        writer.writerow(["Criteria"] + [paramsettings_to_string(value) for value in values])
+        for row in output_data:
+            writer.writerow([row] + output_data[row])
+
+def paramsettings_to_string(paramsettings: dict):
+    result = ""
+    if dict == {}:
+        return "Standard"
+    
+    for key, value in paramsettings.items():
+        result += f"{key}{value}_"
+    return result.rstrip('_')
