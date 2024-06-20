@@ -72,13 +72,6 @@ def execute_graph_reinforcement_learning():
         LOGGER.debug("Generate vehicle-action matches")
         matches = solve_optimization_problem(vehicle_action_pairs)
 
-        for match in matches:
-            if match.action.is_route():
-                matched_order = match.action.route.order
-                destination_vehicle = match.action.route.vehicle_destination
-                destination_time = match.action.route.vehicle_time
-                DataCollector.append_orders_dataa(current_time,matched_order,destination_vehicle,destination_time)
-
         # Apply state changes based on Action-Driver matches and existing driver jobs
         LOGGER.debug("Apply state-value changes")
         State.get_state().apply_state_change(matches)
