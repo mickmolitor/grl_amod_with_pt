@@ -361,22 +361,22 @@ def vehicle_postions_vehicles():
     for i in range(2):
         for j in range(2):
             vehicle_amount = vehicle_amounts[i*2+j]
-            vehicle_df = vehicle_dfs[i*2+j].sample(1000, replace=False, random_state=42)
+            vehicle_df = vehicle_dfs[i*2+j]
             # Draw city borders
             city_borders.plot(ax=ax[i,j], color="lightgrey", alpha=0.6, label="City borders")
 
             # Draw stations
-            ax[i,j].scatter(subway_data_df["LONG"], subway_data_df["LAT"], c="purple", label="Station", alpha=0.7, s = 3)
+            ax[i,j].scatter(subway_data_df["LONG"], subway_data_df["LAT"], c="purple", label="Station", s = 3)
 
             # Draw vehicles
-            ax[i,j].scatter(vehicle_df["lon"], vehicle_df["lat"], c="green", label="Fahrzeug", alpha=0.8, s = 3)
+            ax[i,j].scatter(vehicle_df["lon"], vehicle_df["lat"], c="green", label="Fahrzeug", alpha=0.8**((vehicle_amount if vehicle_amount <= 4000 else 4000) /1000), s = 3)
 
             ax[i,j].set_xlim(-74.05, -73.69)
             ax[i,j].set_ylim(40.535, 40.92)
 
             ax[i,j].legend(loc="lower right")
 
-            ax[i,j].set_title(f"{vehicle_amount} Fahrzeuge: Verteilung von 1000 zufällig gewählten\nFahrzeugen am Ende des Testzeitraumes in NYC")
+            ax[i,j].set_title(f"{vehicle_amount} Fahrzeuge: Verteilung aller Fahrzeuge\nam Ende des Testzeitraumes in NYC")
             ax[i,j].set_xlabel("Latitude")
             ax[i,j].set_ylabel("Longitude")
     plt.subplots_adjust(hspace=0.3)

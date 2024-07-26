@@ -3,7 +3,7 @@ from datetime import timedelta
 import os
 from analysis.numerical_analysis import numerical_analysis, numerical_comparison, numerical_multi_comparison, numerical_selected_multi_comparison
 from analysis.plots_comparison import plot_comparison
-from analysis.plots_procedure_comparison import vehicle_postions_procedures
+from analysis.plots_procedure_comparison import vehicle_postions_procedures, usage_and_rejection_procedures
 from analysis.plots_vehicle_comparison import combi_route_quota_vehicles, served_orders_vehicles, time_reduction_per_order_vehicles, vehicle_distribution_vehicles, vehicle_postions_vehicles, workload_vehicles
 from params.program_params import Mode, ProgramParams
 from params.program_stats import ProgramStats
@@ -216,7 +216,18 @@ while True:
                                 print("This option is not allowed. Please try again.")
                         break
                     elif user_input == "4":
-                        vehicle_postions_procedures()
+                        while True:
+                            user_input = input(
+                                "Which script do you want to start? (Vehicle positions -> 1, Usage and rejections -> 2) "
+                            )
+                            if user_input == "1":
+                                vehicle_postions_procedures()
+                                break
+                            elif user_input == "2":
+                                usage_and_rejection_procedures()
+                                break
+                            else:
+                                print("This option is not allowed. Please try again.")
                         break
                     else:
                         print("This option is not allowed. Please try again.")
