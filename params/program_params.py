@@ -7,6 +7,7 @@ class Mode(Enum):
     # Just solve the optimization problem without knowing state values
     BASELINE_PERFORMANCE = "bl"
     Q_LEARNING = "rl"
+    DEEP_Q_LEARNING = "drl"
 
 class DataSet(Enum):
     YELLOW_CAB = "yellow_cab"
