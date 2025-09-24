@@ -22,7 +22,7 @@ class StateValueNetworks:
     _state_value_networks = None
 
     def get_instance() -> StateValueNetworks:
-        if StateValueNetworks._state_value_networks == None:
+        if StateValueNetworks._state_value_networks is None:
             StateValueNetworks._state_value_networks = StateValueNetworks()
         return StateValueNetworks._state_value_networks
 
@@ -111,64 +111,65 @@ class StateValueNetworks:
         self.iteration += 1
 
     def import_weights(self) -> None:
+        # Determine base path for weights
+        base_dir = "training_data"
+        if ProgramParams.CONDITIONAL_WEIGHTS:
+            base_dir = os.path.join(base_dir, ProgramParams.DAY_TYPE_DIR())
+
+        main_gnn = os.path.join(base_dir, "main_net_GNN_state_dict.pth")
+        main_dnn = os.path.join(base_dir, "main_net_DNN_state_dict.pth")
+        target_gnn = os.path.join(base_dir, "target_net_GNN_state_dict.pth")
+        target_dnn = os.path.join(base_dir, "target_net_DNN_state_dict.pth")
+
         # Main networks
-        if os.path.exists("training_data/main_net_GNN_state_dict.pth"):
-            self.main_net.load_GNN_state_dict(
-                torch.load("training_data/main_net_GNN_state_dict.pth")
-            )
-        if os.path.exists("training_data/main_net_DNN_state_dict.pth"):
-            self.main_net.load_DNN_state_dict(
-                torch.load("training_data/main_net_DNN_state_dict.pth")
-            )
+        if os.path.exists(main_gnn):
+            self.main_net.load_GNN_state_dict(torch.load(main_gnn))
+        if os.path.exists(main_dnn):
+            self.main_net.load_DNN_state_dict(torch.load(main_dnn))
 
         # Target networks
-        if os.path.exists("training_data/target_net_GNN_state_dict.pth"):
-            self.target_net.load_GNN_state_dict(
-                torch.load("training_data/target_net_GNN_state_dict.pth")
-            )
-        elif os.path.exists("training_data/main_net_GNN_state_dict.pth"):
-            self.target_net.load_GNN_state_dict(
-                torch.load("training_data/main_net_GNN_state_dict.pth")
-            )
-        if os.path.exists("training_data/target_net_DNN_state_dict.pth"):
-            self.target_net.load_DNN_state_dict(
-                torch.load("training_data/target_net_DNN_state_dict.pth")
-            )
-        elif os.path.exists("training_data/main_net_DNN_state_dict.pth"):
-            self.target_net.load_DNN_state_dict(
-                torch.load("training_data/main_net_DNN_state_dict.pth")
-            )
+        if os.path.exists(target_gnn):
+            self.target_net.load_GNN_state_dict(torch.load(target_gnn))
+        elif os.path.exists(main_gnn):
+            self.target_net.load_GNN_state_dict(torch.load(main_gnn))
+        if os.path.exists(target_dnn):
+            self.target_net.load_DNN_state_dict(torch.load(target_dnn))
+        elif os.path.exists(main_dnn):
+            self.target_net.load_DNN_state_dict(torch.load(main_dnn))
 
     def export_weights(self) -> None:
-        if not os.path.exists("training_data"):
-            os.makedirs("training_data")
+        base_dir = "training_data"
+        if ProgramParams.CONDITIONAL_WEIGHTS:
+            base_dir = os.path.join(base_dir, ProgramParams.DAY_TYPE_DIR())
+        if not os.path.exists(base_dir):
+            os.makedirs(base_dir)
+
         # Main networks
-        torch.save(
-            self.main_net.get_GNN_state_dict(),
-            "training_data/main_net_GNN_state_dict.pth",
-        )
-        torch.save(
-            self.main_net.get_DNN_state_dict(),
-            "training_data/main_net_DNN_state_dict.pth",
-        )
+        torch.save(self.main_net.get_GNN_state_dict(), os.path.join(base_dir, "main_net_GNN_state_dict.pth"))
+        torch.save(self.main_net.get_DNN_state_dict(), os.path.join(base_dir, "main_net_DNN_state_dict.pth"))
 
         # Target networks
-        torch.save(
-            self.target_net.get_GNN_state_dict(),
-            "training_data/target_net_GNN_state_dict.pth",
-        )
-        torch.save(
-            self.target_net.get_DNN_state_dict(),
-            "training_data/target_net_DNN_state_dict.pth",
-        )
+        torch.save(self.target_net.get_GNN_state_dict(), os.path.join(base_dir, "target_net_GNN_state_dict.pth"))
+        torch.save(self.target_net.get_DNN_state_dict(), os.path.join(base_dir, "target_net_DNN_state_dict.pth"))
 
     def raze_weights() -> None:
         # Delete files with weights
-        if os.path.exists("training_data/main_net_DNN_state_dict.pth"):
-            os.remove("training_data/main_net_DNN_state_dict.pth")
-        if os.path.exists("training_data/main_net_GNN_state_dict.pth"):
-            os.remove("training_data/main_net_GNN_state_dict.pth")
-        if os.path.exists("training_data/target_net_DNN_state_dict.pth"):
-            os.remove("training_data/target_net_DNN_state_dict.pth")
-        if os.path.exists("training_data/target_net_GNN_state_dict.pth"):
-            os.remove("training_data/target_net_GNN_state_dict.pth")
+        def _remove_in_dir(d: str):
+            main_dnn = os.path.join(d, "main_net_DNN_state_dict.pth")
+            main_gnn = os.path.join(d, "main_net_GNN_state_dict.pth")
+            target_dnn = os.path.join(d, "target_net_DNN_state_dict.pth")
+            target_gnn = os.path.join(d, "target_net_GNN_state_dict.pth")
+            if os.path.exists(main_dnn):
+                os.remove(main_dnn)
+            if os.path.exists(main_gnn):
+                os.remove(main_gnn)
+            if os.path.exists(target_dnn):
+                os.remove(target_dnn)
+            if os.path.exists(target_gnn):
+                os.remove(target_gnn)
+
+        # Remove in base dir
+        _remove_in_dir("training_data")
+        # Remove in conditional subdirs as well
+        _remove_in_dir(os.path.join("training_data", "weekday"))
+        _remove_in_dir(os.path.join("training_data", "weekend"))

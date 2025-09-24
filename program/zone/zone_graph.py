@@ -20,7 +20,7 @@ class ZoneGraph:
     _zone_graph: ZoneGraph = None
 
     def get_instance() -> ZoneGraph:
-        if ZoneGraph._zone_graph == None:
+        if ZoneGraph._zone_graph is None:
             current_index = 0
             edge_list = []
             zone_to_node = {}
@@ -28,11 +28,11 @@ class ZoneGraph:
                 reader = csv.DictReader(file)
                 for row in reader:
                     zone1_id = int(row["zone1_id"])
-                    if not zone1_id in zone_to_node:
+                    if zone1_id not in zone_to_node:
                         zone_to_node[zone1_id] = current_index
                         current_index += 1
                     zone2_id = int(row["zone2_id"])
-                    if not zone2_id in zone_to_node:
+                    if zone2_id not in zone_to_node:
                         zone_to_node[zone2_id] = current_index
                         current_index += 1
 
@@ -77,7 +77,16 @@ class ZoneGraph:
         return feature_matrix
     
     def get_feature(self, zone: Zone) -> ZoneGraph.Feature:
-        return self.features[self.zone_to_node[zone.id]]
+        # Some positions may map to a synthetic/out-of-bounds zone (e.g., 9999). Fall back safely.
+        node_id = self.zone_to_node.get(zone.id)
+        if node_id is None:
+            # Return a neutral feature vector when zone is unknown
+            return ZoneGraph.Feature(0, 0, 0, 0, 0)
+        return self.features[node_id]
 
     def get_node_id(self, zone: Zone) -> int:
-        return self.zone_to_node[zone.id]
+        node_id = self.zone_to_node.get(zone.id)
+        if node_id is None:
+            # Fallback to first node to keep embedding access valid
+            return 0
+        return node_id

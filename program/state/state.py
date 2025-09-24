@@ -30,7 +30,7 @@ class State:
         State._state = None
 
     def get_state() -> State:
-        if State._state == None:
+        if State._state is None:
             State._state = State()
         return State._state
 
@@ -104,7 +104,9 @@ class State:
                 del self.orders_dict[route.order.id]
 
         self.update_average_time_reductions()
-        self.apply_state_changes_to_value_function()
+        # Update value function only during training runs
+        if ProgramParams.TRAINING_ENABLED:
+            self.apply_state_changes_to_value_function()
         self.action_reward_tuples = []
 
         amount_of_unserved_orders = len(self.orders_dict)

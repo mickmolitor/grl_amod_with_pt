@@ -34,3 +34,5 @@ def test_parallel_execution():
         
         assert sequential_results == parallel_results, "Die Ergebnisse der sequentiellen und parallelen Ausführung stimmen nicht überein!"
         print("Ergebnisse stimmen überein.")
+
+test_parallel_execution()

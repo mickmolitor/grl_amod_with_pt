@@ -1,6 +1,5 @@
 import csv
 from program.vehicle.vehicle import Vehicle
-from program.grid.grid import Grid
 from program.location.location import Location
 
 
@@ -9,7 +8,7 @@ class Vehicles:
     _vehicles: list[Vehicle] = None
 
     def get_vehicles() -> list[Vehicle]:
-        if Vehicles._vehicles == None:
+        if Vehicles._vehicles is None:
             Vehicles._vehicles = []
             with open("input_data/vehicles.csv", mode="r") as file:
                 reader = csv.DictReader(file)
@@ -17,6 +16,14 @@ class Vehicles:
                     id = int(row["vehicle_id"])
                     location = Location(float(row["lat"]), float(row["lon"]))
                     Vehicles._vehicles.append(Vehicle(location, id=id))
+
+            # In quick-test mode, cap the number of vehicles for speed
+            try:
+                from params.program_params import ProgramParams
+                if ProgramParams.QUICK_TEST:
+                    Vehicles._vehicles = Vehicles._vehicles[: ProgramParams.QUICK_TEST_VEHICLES]
+            except Exception:
+                pass
 
         return Vehicles._vehicles
 

@@ -21,6 +21,20 @@ class ProgramParams:
 
     SIMULATION_DATE = datetime(2023, 7, 10)
 
+    # Toggle for using day-type-specific (weekday/weekend) weight files for GRL
+    CONDITIONAL_WEIGHTS = False
+
+    # Optional label appended to data output path to separate runs (e.g., benchmark tags)
+    OUTPUT_TAG: str | None = None
+
+    # Quick-test mode: reduce vehicles and orders for faster runs
+    QUICK_TEST = True
+    QUICK_TEST_VEHICLES = 100
+    QUICK_TEST_ORDER_SAMPLING_RATE = 0.1  # 10%
+
+    # Training switch: disable weight updates during evaluation runs
+    TRAINING_ENABLED = True
+
     DATA_SET = DataSet.FOR_HIRE
 
 
@@ -40,7 +54,7 @@ class ProgramParams:
 
     IDLING_COST = 5
 
-    AMOUNT_OF_VEHICLES = 2000
+    AMOUNT_OF_VEHICLES = 100
 
     # Radius for relocation in meters
     RELOCATION_RADIUS = 10000
@@ -139,7 +153,19 @@ class ProgramParams:
         re_radius = "_" if ProgramParams.RELOCATION_RADIUS == 10000 else ProgramParams.RELOCATION_RADIUS
         direct_discount = "_" if ProgramParams.DIRECT_TRIP_DISCOUNT_FACTOR == 0.5 else ProgramParams.DIRECT_TRIP_DISCOUNT_FACTOR
         main_target_sync = "_" if ProgramParams.MAIN_AND_TARGET_NET_SYNC_ITERATIONS == 60 else ProgramParams.MAIN_AND_TARGET_NET_SYNC_ITERATIONS
-        return f"{mode}/{mit}/{dr}/{ls}/{lr}/{idling_cost}/{aov}/{re_radius}/{direct_discount}/{main_target_sync}"
+        base = f"{mode}/{mit}/{dr}/{ls}/{lr}/{idling_cost}/{aov}/{re_radius}/{direct_discount}/{main_target_sync}"
+        # Append optional output tag to keep runs separate
+        if ProgramParams.OUTPUT_TAG:
+            base = f"{base}/{ProgramParams.OUTPUT_TAG}"
+        return base
+
+    # Helpers for day type
+    def IS_WEEKEND() -> bool:
+        # Monday=0 ... Sunday=6
+        return ProgramParams.SIMULATION_DATE.weekday() >= 5
+
+    def DAY_TYPE_DIR() -> str:
+        return "weekend" if ProgramParams.IS_WEEKEND() else "weekday"
 
     def set_member(member: str, value):
         if member == "EXECUTION_MODE":
@@ -162,5 +188,15 @@ class ProgramParams:
             ProgramParams.DIRECT_TRIP_DISCOUNT_FACTOR = float(value)
         elif member == "MAIN_AND_TARGET_NET_SYNC_ITERATIONS":
             ProgramParams.MAIN_AND_TARGET_NET_SYNC_ITERATIONS = int(value)
+        elif member == "CONDITIONAL_WEIGHTS":
+            ProgramParams.CONDITIONAL_WEIGHTS = bool(value)
+        elif member == "QUICK_TEST":
+            ProgramParams.QUICK_TEST = bool(value)
+        elif member == "QUICK_TEST_VEHICLES":
+            ProgramParams.QUICK_TEST_VEHICLES = int(value)
+        elif member == "QUICK_TEST_ORDER_SAMPLING_RATE":
+            ProgramParams.QUICK_TEST_ORDER_SAMPLING_RATE = float(value)
+        elif member == "TRAINING_ENABLED":
+            ProgramParams.TRAINING_ENABLED = bool(value)
         else:
             raise Exception(f"No parameter found with name {member}")

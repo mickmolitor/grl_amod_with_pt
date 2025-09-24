@@ -47,7 +47,7 @@ def execute_graph_reinforcement_learning():
 
 
 
-        LOGGER.debug(f"Dispatch orders")
+        LOGGER.debug("Dispatch orders")
         orders = Orders.get_orders_by_time()[current_time]
         for order in orders:
             order.dispatch()
