@@ -6,3 +6,48 @@ To start the app, run the `main.py` file in the root directory. Based on your lo
 
 ## Configure the application
 Configuration can be done in the `params/program_params.py`. All parameters used in the masters thesis can be configured here. Initially shown is the standard parameter set.
+
+# autonomous_on_demand_systems
+Project on analytical information systems in the Information Systems masters program of Freie Universität Berlin. Research question: How can reinforcement learning approaches be used to optimize autonomous on-demand systems in public transport networks.
+
+## Quick start with uv
+
+Use uv for fast Python env and dependency management (Python 3.10+ per `pyproject.toml`).
+
+1) Install uv globally
+
+```bash
+pip install uv
+```
+
+2) Create a virtual environment
+
+```bash
+uv venv
+```
+
+3) Activate the environment
+
+- macOS/Linux:
+
+```bash
+source .venv/bin/activate
+```
+
+- Windows (PowerShell):
+
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+- Windows (CMD):
+
+```bat
+.venv\Scripts\activate.bat
+```
+
+4) Install project dependencies
+
+```bash
+uv sync
+```
